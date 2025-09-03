@@ -1,23 +1,27 @@
 DiscFinder
 
-Veebirakendus mis viib kokku omavahel discgolfi ketaste leidjad ja omanikud.
+A web application that connects disc golf disc finders and owners.
 
-Idee:
-Tihti kaotatud kettad ei jõua oma omanikule tagasi. On olemas Facebooki grupp kuhu leidjad ja kaotajad postitavad info leitud või kaotatud ketaste kohta. Kuna kaotamise või leidmise ajaline vahe võib olla väga pikk siis facebookis kaovad need postitused küllaltki lühikese ajaga. Lisaks näiteks veekogudest leitakse tavaliselt suur kogus kettaid mis pannakse facebooki ühe pika postituse või pildina ning ketaste omanike leidmine võib olla keeruline.
+Idea: Often, lost discs don’t make it back to their owners. There is a Facebook group where finders and losers post information about found or lost discs. However, since there can be a long time gap between losing and finding, these posts disappear from Facebook fairly quickly. Additionally, for example, a large number of discs found in water bodies are usually posted in a single long post or photo on Facebook, making it difficult to identify the owners.
 
+How the Application Works:
 
-Rakenduse Toimimine: 
+Users need to register. A user can enter a lost or found disc and describe various properties of the disc:
 
-Kasutajad tuleb registreerida.
-Kasutaja saab sisestada leitud või kaotatud ketta ning kirjeldab selle ketta erinevaid parameetreid: 
-- Kaotamise/leidmise asukoht (Kaardil, või discgolfi raja ja korvi täpsusega)
-- Kaotamise/leidmise aeg
-- Tootja(firma)
-- Nimetus
-- Plastik
-- Värv
-- Nimi/number Ketta tagaküljel
-- ketta hinnatav seisukord
+Location of loss/finding (on a map, or with disc golf course and basket precision)
 
-Rakendus võrdleb omavahel kaotatud ja leitud kettaid ning viib omavahel kokku võimalikud kattuvused. Kasutajad saavad teineteisega ühendust võtta ning kui mõlemad kinnitavad, et tegu on õige ketta või omanikuga siis saavad edasise omavahel kokku leppida ning ketas eemaldatakse mõlemast andmebaasist. 
+Date and time of loss/finding
 
+Manufacturer
+
+Name/label
+
+Plastic type
+
+Color
+
+Name/number on the back of the disc
+
+Estimated condition of the disc
+
+The application compares lost and found discs and matches possible overlaps. Users can contact each other, and if both confirm that it is the correct disc or owner, they can arrange further details, and the disc is removed from both databases.
