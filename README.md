@@ -25,3 +25,5 @@ Name/number on the back of the disc
 Estimated condition of the disc
 
 The application compares lost and found discs and matches possible overlaps. Users can contact each other, and if both confirm that it is the correct disc or owner, they can arrange further details, and the disc is removed from both databases.
+
+Link to figma design: https://www.figma.com/design/RzD3jPYul9pUTBgf33A4o9/Untitled?node-id=0-1&p=f&t=KdUwilWYK0PHCkpJ-0
