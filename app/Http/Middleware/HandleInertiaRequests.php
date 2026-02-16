@@ -41,7 +41,28 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'locale' => app()->getLocale(),
+            'translations' => $this->loadTranslations(app()->getLocale()),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Load translation strings for the given locale with English fallback.
+     *
+     * @return array<string, string>
+     */
+    private function loadTranslations(string $locale): array
+    {
+        $path = lang_path();
+        $en = $path.'/en.json';
+        $localeFile = $path.'/'.$locale.'.json';
+
+        $fallback = is_file($en) ? (array) json_decode((string) file_get_contents($en), true) : [];
+        $strings = ($locale !== 'en' && is_file($localeFile))
+            ? (array) json_decode((string) file_get_contents($localeFile), true)
+            : [];
+
+        return array_merge($fallback, $strings);
     }
 }
