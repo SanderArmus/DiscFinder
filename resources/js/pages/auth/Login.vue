@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { Eye, EyeOff } from 'lucide-vue-next';
+import { ChevronDown, Eye, EyeOff } from 'lucide-vue-next';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import InputError from '@/components/InputError.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
@@ -18,6 +18,7 @@ defineProps<{
 
 const t = useTranslations();
 const showPassword = ref(false);
+const showAbout = ref(false);
 </script>
 
 <template>
@@ -38,7 +39,7 @@ const showPassword = ref(false);
                 <div class="flex h-16 items-center justify-between">
                     <!-- Logo -->
                     <div class="flex items-center gap-2">
-                        <AppLogoIcon class="h-6 w-6" />
+                        <AppLogoIcon class="h-9 w-9 shrink-0" />
                         <span
                             class="text-xl font-bold text-gray-900 dark:text-white"
                         >
@@ -95,7 +96,7 @@ const showPassword = ref(false);
                             required
                             :placeholder="t('hello@example.com')"
                             autocomplete="email"
-                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-primary dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 shadow-inner transition-all outline-none placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-primary dark:border-gray-800 dark:bg-gray-900 dark:text-white"
                         />
                         <InputError :message="errors.email" />
                     </div>
@@ -124,7 +125,7 @@ const showPassword = ref(false);
                                 required
                                 :placeholder="t('Enter your password')"
                                 autocomplete="current-password"
-                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-12 text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-primary dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-12 text-gray-900 shadow-inner transition-all outline-none placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-primary dark:border-gray-800 dark:bg-gray-900 dark:text-white"
                             />
 
                             <button
@@ -145,7 +146,7 @@ const showPassword = ref(false);
                     <button
                         type="submit"
                         :disabled="processing"
-                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#5c7564] py-3.5 font-semibold text-white shadow-md transition-all hover:bg-[#6d9472] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <span v-if="processing" class="animate-spin">⏳</span>
                         {{ t('Log In') }}
@@ -195,6 +196,44 @@ const showPassword = ref(false);
                             {{ t('Sign Up') }}
                         </Link>
                     </p>
+                </div>
+
+                <!-- Collapsible: About DiscFinder (inside card) -->
+                <div class="mt-8 rounded-xl border border-gray-100 bg-gray-50/80 shadow-inner dark:border-gray-800 dark:bg-gray-800/40">
+                    <button
+                        type="button"
+                        class="flex w-full items-center justify-between px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                        :aria-expanded="showAbout"
+                        aria-controls="about-content"
+                        @click="showAbout = !showAbout"
+                    >
+                        <span>{{ t('About DiscFinder') }}</span>
+                        <ChevronDown
+                            class="h-4 w-4 shrink-0 text-gray-500 transition-transform dark:text-gray-400"
+                            :class="showAbout ? 'rotate-180' : ''"
+                        />
+                    </button>
+                    <div
+                        id="about-content"
+                        :class="showAbout ? 'block' : 'hidden'"
+                    >
+                        <div class="border-t border-gray-200/80 px-4 pb-4 pt-3 text-sm leading-relaxed text-gray-600 shadow-inner dark:border-gray-700/80 dark:text-gray-400">
+                            <p class="mb-3">
+                                {{ t("DiscFinder helps lost disc golf discs find their way back home. If you've ever lost your favorite driver in the woods or fished someone else's disc out of a pond, you already know the pain on both sides.") }}
+                            </p>
+                            <p class="mb-3">
+                                {{ t("DiscFinder connects people who find discs with those who lost them — in one simple, searchable place. Report lost or found discs with location, brand, color, and more; we suggest matches so you can connect and arrange a handoff.") }}
+                            </p>
+                            <p>
+                                <Link
+                                    href="/about"
+                                    class="font-medium text-[#5c7564] hover:underline dark:text-[#6d9472]"
+                                >
+                                    {{ t('Read full story →') }}
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

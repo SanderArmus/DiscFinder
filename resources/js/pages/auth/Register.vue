@@ -25,7 +25,7 @@ const showConfirmPassword = ref(false);
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <div class="flex items-center gap-2">
-                        <AppLogoIcon class="w-6 h-6" />
+                        <AppLogoIcon class="h-9 w-9 shrink-0" />
                         <span class="text-xl font-bold text-gray-900 dark:text-white">
                             DiscFinder
                         </span>
@@ -112,7 +112,7 @@ const showConfirmPassword = ref(false);
                     <button
                         type="submit"
                         :disabled="processing"
-                        class="w-full bg-[#5c7564] hover:bg-[#6d9472] text-white font-semibold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         <span v-if="processing" class="animate-spin">⏳</span>
                         {{ t('Sign Up') }}

@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { useTranslations } from '@/composables/useTranslations';
 import { type BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
+
+const t = useTranslations();
 
 interface Disc {
     id: number;
     name: string;
     brand: string;
     color: string;
-    status: 'Lost' | 'Found';
+    status: 'lost' | 'found';
     reportedAt: string;
 }
 
@@ -22,39 +25,17 @@ interface Match {
     date: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'My Profile',
-        href: dashboard().url,
-    },
-];
+const props = defineProps<{
+    discs: Disc[];
+}>();
 
-const discs = ref<Disc[]>([
-    {
-        id: 1,
-        name: 'Innova Destroyer',
-        brand: 'Star',
-        color: 'Electric Blue',
-        status: 'Lost',
-        reportedAt: 'Oct 15, 2023',
-    },
-    {
-        id: 2,
-        name: 'Discraft Buzzz',
-        brand: 'Z Line',
-        color: 'Neon Pink',
-        status: 'Found',
-        reportedAt: 'Sep 22, 2023',
-    },
-    {
-        id: 3,
-        name: 'MVP Glitch',
-        brand: 'Neutron Soft',
-        color: 'White / Black Rim',
-        status: 'Lost',
-        reportedAt: 'Sep 05, 2023',
-    },
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    { title: t('My Profile'), href: dashboard().url },
 ]);
+
+function statusLabel(status: 'lost' | 'found'): string {
+    return status === 'lost' ? t('Lost') : t('Found');
+}
 
 const matches = ref<Match[]>([
     {
@@ -78,39 +59,39 @@ const matches = ref<Match[]>([
     <Head title="My Profile" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
-            <!-- Page Header -->
-            <div
-                class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
-            >
-                <div>
-                    <h2
-                        class="mb-2 text-3xl font-black tracking-tight text-foreground"
-                    >
-                        My Profile
-                    </h2>
-                    <p
-                        class="max-w-md text-muted-foreground"
-                    >
-                        Manage your reported equipment and review potential
-                        matches found by the community.
-                    </p>
+        <div class="flex h-full flex-1 flex-col overflow-x-auto">
+            <div class="flex flex-1 flex-col gap-6 p-4">
+                <!-- Page Header -->
+                <div
+                    class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+                >
+                    <div>
+                        <h2
+                            class="mb-2 text-3xl font-black tracking-tight text-foreground"
+                        >
+                            {{ t('My Profile') }}
+                        </h2>
+                        <p
+                            class="max-w-md text-muted-foreground"
+                        >
+                            {{ t('Manage your reported equipment and review potential matches found by the community.') }}
+                        </p>
+                    </div>
+                    <div class="flex w-full flex-wrap gap-3 sm:w-auto">
+                        <Link
+                            href="/lost-discs"
+                            class="inline-flex min-w-0 flex-1 items-center justify-center rounded-xl bg-[#5c7564] px-6 py-3 font-bold text-white shadow-md transition-colors hover:bg-[#6d9472] sm:flex-initial"
+                        >
+                            {{ t('Report Lost Disc') }}
+                        </Link>
+                        <Link
+                            href="/found-discs"
+                            class="inline-flex min-w-0 flex-1 items-center justify-center rounded-xl bg-[#5c7564] px-6 py-3 font-bold text-white shadow-md transition-colors hover:bg-[#6d9472] sm:flex-initial"
+                        >
+                            {{ t('Report Found Disc') }}
+                        </Link>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    <button
-                        type="button"
-                        class="rounded-lg border-2 border-border px-6 py-3 font-bold text-foreground transition-colors hover:bg-muted"
-                    >
-                        Report Lost Disc
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-lg bg-primary px-6 py-3 font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-                    >
-                        Report Found Disc
-                    </button>
-                </div>
-            </div>
 
             <!-- Dashboard Grid -->
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -118,12 +99,12 @@ const matches = ref<Match[]>([
                 <div class="space-y-4 lg:col-span-7">
                     <div class="flex items-center justify-between px-2">
                         <h3 class="text-xl font-bold text-foreground">
-                            My Reported Discs
+                            {{ t('My Reported Discs') }}
                         </h3>
                         <span
                             class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
                         >
-                            {{ discs.length }} Items
+                            {{ props.discs.length }} {{ t('Items') }}
                         </span>
                     </div>
                     <div
@@ -138,22 +119,22 @@ const matches = ref<Match[]>([
                                         <th
                                             class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
                                         >
-                                            Disc Name
+                                            {{ t('Disc Name') }}
                                         </th>
                                         <th
                                             class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
                                         >
-                                            Plastic / Brand
+                                            {{ t('Plastic / Brand') }}
                                         </th>
                                         <th
                                             class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
                                         >
-                                            Color
+                                            {{ t('Color') }}
                                         </th>
                                         <th
                                             class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
                                         >
-                                            Status
+                                            {{ t('Status') }}
                                         </th>
                                     </tr>
                                 </thead>
@@ -161,7 +142,18 @@ const matches = ref<Match[]>([
                                     class="divide-y divide-sidebar-border dark:divide-sidebar-border"
                                 >
                                     <tr
-                                        v-for="disc in discs"
+                                        v-if="props.discs.length === 0"
+                                        class="text-center text-muted-foreground"
+                                    >
+                                        <td
+                                            colspan="4"
+                                            class="px-6 py-12 text-sm"
+                                        >
+                                            {{ t('No reported discs yet. Report a lost or found disc to get started.') }}
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        v-for="disc in props.discs"
                                         :key="disc.id"
                                         class="transition-colors hover:bg-muted/30"
                                     >
@@ -174,7 +166,7 @@ const matches = ref<Match[]>([
                                             <div
                                                 class="text-xs text-muted-foreground"
                                             >
-                                                Reported {{ disc.reportedAt }}
+                                                {{ t('Reported') }} {{ disc.reportedAt }}
                                             </div>
                                         </td>
                                         <td
@@ -191,12 +183,12 @@ const matches = ref<Match[]>([
                                             <span
                                                 class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
                                                 :class="
-                                                    disc.status === 'Lost'
+                                                    disc.status === 'lost'
                                                         ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                         : 'bg-primary/20 text-foreground dark:text-primary'
                                                 "
                                             >
-                                                {{ disc.status }}
+                                                {{ statusLabel(disc.status) }}
                                             </span>
                                         </td>
                                     </tr>
@@ -210,7 +202,7 @@ const matches = ref<Match[]>([
                                 type="button"
                                 class="text-sm font-bold text-muted-foreground transition-colors hover:text-primary"
                             >
-                                View All Activity
+                                {{ t('View All Activity') }}
                             </button>
                         </div>
                     </div>
@@ -220,7 +212,7 @@ const matches = ref<Match[]>([
                 <div class="space-y-4 lg:col-span-5">
                     <div class="flex items-center justify-between px-2">
                         <h3 class="text-xl font-bold text-foreground">
-                            Potential Matches
+                            {{ t('Potential Matches') }}
                         </h3>
                         <span
                             class="flex h-2 w-2 animate-pulse rounded-full bg-primary"
@@ -238,7 +230,7 @@ const matches = ref<Match[]>([
                                         {{ match.name }}
                                     </h4>
                                     <p class="text-xs text-muted-foreground">
-                                        Matches your lost disc report
+                                        {{ t('Matches your lost disc report') }}
                                     </p>
                                 </div>
                                 <span
@@ -249,7 +241,7 @@ const matches = ref<Match[]>([
                                             : 'bg-muted text-muted-foreground'
                                     "
                                 >
-                                    {{ match.confidence }}% Match
+                                    {{ match.confidence }}% {{ t('Match') }}
                                 </span>
                             </div>
                             <div
@@ -259,7 +251,7 @@ const matches = ref<Match[]>([
                                     <p
                                         class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground"
                                     >
-                                        Location Found
+                                        {{ t('Location Found') }}
                                     </p>
                                     <p class="text-foreground">
                                         {{ match.location }}
@@ -269,7 +261,7 @@ const matches = ref<Match[]>([
                                     <p
                                         class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground"
                                     >
-                                        Date Found
+                                        {{ t('Date Found') }}
                                     </p>
                                     <p class="text-foreground">
                                         {{ match.date }}
@@ -281,18 +273,19 @@ const matches = ref<Match[]>([
                                     type="button"
                                     class="flex-1 rounded py-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted"
                                 >
-                                    Not Mine
+                                    {{ t('Not Mine') }}
                                 </button>
                                 <button
                                     type="button"
                                     class="flex-1 rounded bg-primary py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
                                 >
-                                    Claim Disc
+                                    {{ t('Claim Disc') }}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </AppLayout>
