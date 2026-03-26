@@ -27,3 +27,42 @@ Estimated condition of the disc
 The application compares lost and found discs and matches possible overlaps. Users can contact each other, and if both confirm that it is the correct disc or owner, they can arrange further details, and the disc is removed from both databases.
 
 Link to figma design: https://www.figma.com/design/RzD3jPYul9pUTBgf33A4o9/Untitled?node-id=0-1&p=f&t=KdUwilWYK0PHCkpJ-0
+
+## Getting started (local development)
+
+### Prerequisites
+- PHP 8.4
+- Composer
+- Node.js + npm
+- A database (MySQL/PostgreSQL recommended). SQLite also works for quick local runs.
+
+### Setup
+```bash
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+
+php artisan migrate
+```
+
+### Run the app
+In one terminal:
+```bash
+npm run dev
+```
+
+In another terminal:
+```bash
+php artisan serve
+```
+
+Open `http://127.0.0.1:8000`.
+
+### Useful commands
+```bash
+php artisan test --compact
+vendor/bin/pint --dirty --format agent
+npm run build
+```
