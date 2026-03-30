@@ -31,12 +31,17 @@ class StoreFoundDiscController extends Controller
             'active' => true,
         ]);
 
-        if ($request->filled('latitude') && $request->filled('longitude')) {
+        $locationText = $request->input('location');
+        $hasText = $locationText !== null && trim((string) $locationText) !== '';
+        $hasCoords = $request->filled('latitude') && $request->filled('longitude');
+
+        if ($hasText || $hasCoords) {
             Location::create([
                 'disc_id' => $disc->id,
-                'latitude' => $request->input('latitude'),
-                'longitude' => $request->input('longitude'),
+                'latitude' => $hasCoords ? $request->input('latitude') : null,
+                'longitude' => $hasCoords ? $request->input('longitude') : null,
                 'location_type' => 'found',
+                'location_text' => $hasText ? (string) $locationText : null,
             ]);
         }
 

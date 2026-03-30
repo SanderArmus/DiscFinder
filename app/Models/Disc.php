@@ -19,6 +19,7 @@ class Disc extends Model
         'back_text',
         'condition_estimate',
         'active',
+        'match_lifecycle',
     ];
 
     /**

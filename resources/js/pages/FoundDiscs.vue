@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Label } from '@/components/ui/label';
+import { ref, watch } from 'vue';
 import LocationMapPicker from '@/components/LocationMapPicker.vue';
+import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/composables/useTranslations';
-import { type BreadcrumbItem } from '@/types';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
+import { type BreadcrumbItem } from '@/types';
 
 const t = useTranslations();
 

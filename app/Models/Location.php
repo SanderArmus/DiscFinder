@@ -14,6 +14,7 @@ class Location extends Model
         'latitude',
         'longitude',
         'location_type',
+        'location_text',
     ];
 
     /**

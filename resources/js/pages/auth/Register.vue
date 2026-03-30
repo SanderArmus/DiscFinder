@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Form, Head, Link } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import InputError from '@/components/InputError.vue';
@@ -9,8 +8,6 @@ import { login } from '@/routes';
 import { store } from '@/routes/register';
 
 const t = useTranslations();
-const showPassword = ref(false);
-const showConfirmPassword = ref(false);
 </script>
 
 <template>

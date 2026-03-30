@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\UnreadMessagesCounter;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,6 +45,9 @@ class HandleInertiaRequests extends Middleware
             'locale' => app()->getLocale(),
             'translations' => $this->loadTranslations(app()->getLocale()),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'unreadMessageCount' => $request->user() !== null
+                ? app(UnreadMessagesCounter::class)->countForUser($request->user())
+                : 0,
         ];
     }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import 'leaflet/dist/leaflet.css';
 
 const props = withDefaults(
@@ -9,12 +9,18 @@ const props = withDefaults(
         defaultCenter?: [number, number];
         defaultZoom?: number;
         height?: string;
+        draggable?: boolean;
+        allowClickToSet?: boolean;
+        allowGeolocation?: boolean;
     }>(),
     {
         modelValue: null,
         defaultCenter: () => [59.437, 24.7536],
         defaultZoom: 12,
         height: '320px',
+        draggable: true,
+        allowClickToSet: true,
+        allowGeolocation: true,
     }
 );
 
@@ -42,7 +48,7 @@ function updateMarker(lat: number, lng: number): void {
     } else {
         marker = L.marker([lat, lng], {
             icon: defaultIcon,
-            draggable: true,
+            draggable: props.draggable,
         }).addTo(map);
         marker.on('dragend', () => {
             const pos = marker!.getLatLng();
@@ -67,6 +73,8 @@ function initMap(): void {
     }).addTo(map);
 
     map.on('click', (e: L.LeafletMouseEvent) => {
+        if (!props.allowClickToSet) return;
+
         const { lat, lng } = e.latlng;
         updateMarker(lat, lng);
         emit('update:modelValue', { lat, lng });
@@ -101,10 +109,20 @@ watch(
     }
 );
 
+watch(
+    () => props.draggable,
+    (val) => {
+        if (marker) {
+            marker.dragging?.disable();
+            if (val) marker.dragging?.enable();
+        }
+    }
+);
+
 onMounted(() => {
     initMap();
 
-    if (!props.modelValue && navigator.geolocation) {
+    if (!props.modelValue && props.allowGeolocation && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 if (!map) {

@@ -50,7 +50,7 @@ const t = useTranslations();
                     <p
                         class="mt-4 text-lg leading-relaxed text-gray-600 dark:text-gray-400"
                     >
-                        {{ t('DiscFinder helps lost disc golf discs find their way back home.') }}
+                        {{ t('DiscFinder helps lost discgolf discs find their way back home.') }}
                     </p>
                 </header>
 

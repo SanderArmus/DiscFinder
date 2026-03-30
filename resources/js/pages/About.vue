@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
 const t = useTranslations();
@@ -27,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <p
                             class="mt-4 text-lg leading-relaxed text-muted-foreground"
                         >
-                            {{ t('DiscFinder helps lost disc golf discs find their way back home.') }}
+                            {{ t('DiscFinder helps lost discgolf discs find their way back home.') }}
                         </p>
                     </header>
 

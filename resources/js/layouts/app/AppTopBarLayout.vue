@@ -5,15 +5,15 @@ import {
     LayoutGrid,
     LogOut,
     Menu,
+    MessageSquare,
     Settings,
-    Target,
-    MapPin,
     Info,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,15 +28,14 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import { useTranslations } from '@/composables/useTranslations';
-import type { Auth } from '@/types/auth';
-import type { BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
-import { edit } from '@/routes/profile';
 import { logout } from '@/routes';
+import { edit } from '@/routes/profile';
+import type { BreadcrumbItem } from '@/types';
+import type { Auth } from '@/types/auth';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -48,6 +47,9 @@ withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => (page.props as { auth?: Auth }).auth);
+const unreadMessageCount = computed(
+    () => (page.props as { unreadMessageCount?: number }).unreadMessageCount ?? 0,
+);
 const t = useTranslations();
 
 const mainNavItems = [
@@ -161,6 +163,19 @@ const mobileNavItems = [
             </div>
 
             <div class="ml-auto flex shrink-0 items-center gap-2">
+                <Link
+                    :href="`/messages`"
+                    class="relative inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-muted"
+                    aria-label="Messages"
+                >
+                    <MessageSquare class="h-5 w-5 text-primary" />
+                    <span
+                        v-if="unreadMessageCount > 0"
+                        class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-card bg-red-600 px-1 text-[10px] font-bold text-white"
+                    >
+                        {{ unreadMessageCount > 99 ? '99+' : unreadMessageCount }}
+                    </span>
+                </Link>
                 <LanguageSwitcher />
                 <!-- Profile / Settings (desktop & mobile) -->
                 <DropdownMenu>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ChevronDown, Eye, EyeOff } from 'lucide-vue-next';
+import { ref } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import InputError from '@/components/InputError.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
