@@ -67,20 +67,6 @@ const t = useTranslations();
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('Full Name') }}</label>
-                        <input
-                            name="name"
-                            type="text"
-                            required
-                            autofocus
-                            :placeholder="t('Enter your full name')"
-                            autocomplete="name"
-                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-gray-900 dark:text-white placeholder:text-gray-400"
-                        />
-                        <InputError :message="errors.name" />
-                    </div>
-
-                    <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('Email Address') }}</label>
                         <input
                             name="email"
@@ -143,12 +129,12 @@ const t = useTranslations();
 
                 <!-- Social: Google + Facebook -->
                 <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30">
+                    <a href="/auth/google/redirect" class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30">
                         <span class="text-sm font-medium">{{ t('Google') }}</span>
-                    </button>
-                    <button type="button" class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30">
+                    </a>
+                    <a href="/auth/facebook/redirect" class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30">
                         <span class="text-sm font-medium">{{ t('Facebook') }}</span>
-                    </button>
+                    </a>
                 </div>
 
                 <div class="mt-8 text-center">

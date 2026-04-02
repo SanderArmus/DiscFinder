@@ -1,0 +1,77 @@
+<?php
+
+use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+
+test('facebook callback redirects new users to choose username', function () {
+    $providerUser = Mockery::mock();
+    $providerUser->shouldReceive('getId')->andReturn('fb_123');
+    $providerUser->shouldReceive('getEmail')->andReturn('new@example.com');
+
+    $driverMock = Mockery::mock();
+    $driverMock->shouldReceive('user')->andReturn($providerUser);
+
+    Socialite::shouldReceive('driver')
+        ->with('facebook')
+        ->andReturn($driverMock);
+
+    $response = $this->get(route('auth.facebook.callback', absolute: false));
+
+    $response->assertRedirect(route('auth.facebook.username', absolute: false));
+    $this->assertDatabaseMissing('users', ['email' => 'new@example.com']);
+
+    $this->assertEquals(
+        ['id' => 'fb_123', 'email' => 'new@example.com'],
+        session('auth.facebook')
+    );
+});
+
+test('facebook callback logs in existing user by email and marks it verified', function () {
+    $user = User::factory()
+        ->unverified()
+        ->create([
+            'email' => 'existing@example.com',
+            'facebook_id' => null,
+        ]);
+
+    $providerUser = Mockery::mock();
+    $providerUser->shouldReceive('getId')->andReturn('fb_123');
+    $providerUser->shouldReceive('getEmail')->andReturn('existing@example.com');
+
+    $driverMock = Mockery::mock();
+    $driverMock->shouldReceive('user')->andReturn($providerUser);
+
+    Socialite::shouldReceive('driver')
+        ->with('facebook')
+        ->andReturn($driverMock);
+
+    $response = $this->get(route('auth.facebook.callback', absolute: false));
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertAuthenticatedAs($user);
+
+    $fresh = $user->fresh();
+    expect($fresh->facebook_id)->toBe('fb_123');
+    expect($fresh->email_verified_at)->not->toBeNull();
+});
+
+test('storing chosen username creates a new user and logs them in', function () {
+    $this->withSession([
+        'auth.facebook' => [
+            'id' => 'fb_123',
+            'email' => 'new@example.com',
+        ],
+    ]);
+
+    $response = $this->post(route('auth.facebook.username.store', absolute: false), [
+        'username' => 'chosenname',
+    ]);
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertAuthenticated();
+
+    $user = User::query()->where('email', 'new@example.com')->firstOrFail();
+    expect($user->username)->toBe('chosenname');
+    expect($user->facebook_id)->toBe('fb_123');
+    expect($user->email_verified_at)->not->toBeNull();
+});

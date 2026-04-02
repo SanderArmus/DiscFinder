@@ -171,18 +171,18 @@ const showAbout = ref(false);
 
                 <!-- Social -->
                 <div class="grid grid-cols-2 gap-4">
-                    <button
-                        type="button"
+                    <a
+                        href="/auth/google/redirect"
                         class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30"
                     >
                         <span class="text-sm font-medium">{{ t('Google') }}</span>
-                    </button>
-                    <button
-                        type="button"
+                    </a>
+                    <a
+                        href="/auth/facebook/redirect"
                         class="flex items-center justify-center gap-2 rounded-xl border border-[#5c7564]/40 bg-[#5c7564]/10 px-4 py-2.5 text-[#5c7564] transition-colors hover:bg-[#6d9472]/20 hover:border-[#6d9472]/50 dark:bg-[#5c7564]/20 dark:text-[#8faf94] dark:hover:bg-[#6d9472]/30"
                     >
                         <span class="text-sm font-medium">{{ t('Facebook') }}</span>
-                    </button>
+                    </a>
                 </div>
 
                 <div class="mt-8 text-center">

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDiscsController;
+use App\Http\Controllers\Auth\FacebookAuthController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ConfirmMatchController;
 use App\Http\Controllers\DeleteDiscController;
 use App\Http\Controllers\HandOverMatchController;
@@ -114,6 +116,38 @@ Route::get('about', function () {
 
     return Inertia::render('AboutPublic');
 })->name('about');
+
+Route::get('auth/facebook/redirect', [FacebookAuthController::class, 'redirectToFacebook'])
+    ->middleware(['web'])
+    ->name('auth.facebook.redirect');
+
+Route::get('auth/facebook/callback', [FacebookAuthController::class, 'handleFacebookCallback'])
+    ->middleware(['web'])
+    ->name('auth.facebook.callback');
+
+Route::get('auth/facebook/username', [FacebookAuthController::class, 'showChooseUsername'])
+    ->middleware(['web'])
+    ->name('auth.facebook.username');
+
+Route::post('auth/facebook/username', [FacebookAuthController::class, 'storeChooseUsername'])
+    ->middleware(['web'])
+    ->name('auth.facebook.username.store');
+
+Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])
+    ->middleware(['web'])
+    ->name('auth.google.redirect');
+
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])
+    ->middleware(['web'])
+    ->name('auth.google.callback');
+
+Route::get('auth/google/username', [GoogleAuthController::class, 'showChooseUsername'])
+    ->middleware(['web'])
+    ->name('auth.google.username');
+
+Route::post('auth/google/username', [GoogleAuthController::class, 'storeChooseUsername'])
+    ->middleware(['web'])
+    ->name('auth.google.username.store');
 
 Route::get('matches/{match}', ShowMatchChatController::class)
     ->middleware(['auth', 'verified'])
