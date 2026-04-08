@@ -7,6 +7,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import UserInfo from '@/components/UserInfo.vue';
 import { useTranslations } from '@/composables/useTranslations';
 import { logout } from '@/routes';
@@ -41,6 +42,10 @@ defineProps<Props>();
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
+    <DropdownMenuSeparator />
+    <div class="px-2 py-2">
+        <AppearanceTabs />
+    </div>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
         <Link

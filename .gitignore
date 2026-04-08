@@ -28,3 +28,16 @@ yarn-error.log
 /.zed
 
 /loputoo_discivo_mustand.txt
+
+# Thesis drafts/exports (keep local only)
+/loputoo_discivo_korrektne*.txt
+/loputoo_discivo_korrektne*.docx
+/loputoo_discivo_korrektne*.rtf
+/make_thesis_docx.php
+
+# School assignment reference docs (keep local only)
+/AToppekava_juhend.pdf
+/Hindamisstandard_noorem-tarkvaraarendaja*.docx
+
+# Temporary extracted text files
+/*extracted*.txt
