@@ -56,6 +56,7 @@ const messagesEl = ref<HTMLElement | null>(null);
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
 const emojiOpen = ref(false);
 const emojiButtonEl = ref<HTMLElement | null>(null);
+const emojiPopoverEl = ref<HTMLElement | null>(null);
 
 const emojiChoices = [
     '😀', '😄', '😉', '😍', '🥳', '😅', '😢', '😡',
@@ -165,6 +166,8 @@ function handleGlobalPointerDown(e: MouseEvent): void {
     const target = e.target as Node | null;
     const button = emojiButtonEl.value;
     if (button && target && button.contains(target)) return;
+    const popover = emojiPopoverEl.value;
+    if (popover && target && popover.contains(target)) return;
 
     emojiOpen.value = false;
 }
@@ -479,7 +482,8 @@ watch(
 
                                 <div
                                     v-if="emojiOpen"
-                                    class="absolute right-0 top-11 z-20 w-56 rounded-xl border border-border bg-card p-3 shadow-lg"
+                                    ref="emojiPopoverEl"
+                                    class="absolute right-0 bottom-11 z-20 w-56 max-h-60 overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg"
                                 >
                                     <div class="grid grid-cols-8 gap-1">
                                         <button

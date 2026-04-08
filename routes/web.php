@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDiscsController;
+use App\Http\Controllers\Admin\AdminUsersController;
 use App\Http\Controllers\Auth\FacebookAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ConfirmMatchController;
@@ -15,8 +16,10 @@ use App\Http\Controllers\StoreFoundDiscController;
 use App\Http\Controllers\StoreLostDiscController;
 use App\Http\Controllers\StoreMatchMessageController;
 use App\Http\Controllers\UpdateDiscController;
+use App\Models\Disc;
 use App\Services\MatchChatFinder;
 use App\Services\MatchFinder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -85,17 +88,102 @@ Route::get('help', ShowHelpController::class)
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('discs', [AdminDiscsController::class, 'index'])->name('admin.discs.index');
     Route::patch('discs/{disc}', [AdminDiscsController::class, 'update'])->name('admin.discs.update');
+    Route::patch('matches/{match}', [AdminDiscsController::class, 'updateMatch'])->name('admin.matches.update');
+
+    Route::get('users', [AdminUsersController::class, 'index'])->name('admin.users.index');
+    Route::patch('users/{user}', [AdminUsersController::class, 'update'])->name('admin.users.update');
 });
 
 Route::get('lost-discs', function () {
     return Inertia::render('LostDiscs');
 })->middleware(['auth', 'verified'])->name('lost-discs.index');
-Route::post('lost-discs', StoreLostDiscController::class)->middleware(['auth', 'verified'])->name('lost-discs.store');
+Route::post('lost-discs', StoreLostDiscController::class)->middleware(['auth', 'verified', 'throttle:disc-submissions'])->name('lost-discs.store');
 
 Route::get('found-discs', function () {
     return Inertia::render('FoundDiscs');
 })->middleware(['auth', 'verified'])->name('found-discs.index');
-Route::post('found-discs', StoreFoundDiscController::class)->middleware(['auth', 'verified'])->name('found-discs.store');
+Route::post('found-discs', StoreFoundDiscController::class)->middleware(['auth', 'verified', 'throttle:disc-submissions'])->name('found-discs.store');
+
+Route::get('catalog/manufacturers', function (Request $request) {
+    $q = trim((string) $request->query('q', ''));
+
+    $query = Disc::query()
+        ->select('manufacturer')
+        ->whereNotNull('manufacturer')
+        ->distinct();
+
+    if ($q !== '') {
+        $query->where('manufacturer', 'like', '%'.$q.'%');
+    }
+
+    $items = $query
+        ->orderBy('manufacturer')
+        ->limit(10)
+        ->pluck('manufacturer')
+        ->values();
+
+    return response()->json(['items' => $items]);
+})->middleware(['auth', 'verified']);
+
+Route::get('catalog/plastics', function (Request $request) {
+    $manufacturer = (string) $request->query('manufacturer', '');
+    $q = (string) $request->query('q', '');
+
+    $query = Disc::query()
+        ->select('plastic_type')
+        ->whereNotNull('plastic_type')
+        ->distinct();
+
+    if ($manufacturer !== '' && $manufacturer !== 'other') {
+        $query->where('manufacturer', $manufacturer);
+    }
+
+    $q = trim($q);
+    if ($q !== '') {
+        $query->where('plastic_type', 'like', '%'.$q.'%');
+    }
+
+    $items = $query
+        ->orderBy('plastic_type')
+        ->limit(10)
+        ->pluck('plastic_type')
+        ->values();
+
+    return response()->json(['items' => $items]);
+})->middleware(['auth', 'verified']);
+
+Route::get('catalog/models', function (Request $request) {
+    $manufacturer = (string) $request->query('manufacturer', '');
+    $plastic = (string) $request->query('plastic', '');
+    $q = (string) $request->query('q', '');
+
+    $query = Disc::query()
+        ->select('model_name')
+        ->whereNotNull('model_name')
+        ->distinct();
+
+    if ($manufacturer !== '' && $manufacturer !== 'other') {
+        $query->where('manufacturer', $manufacturer);
+    }
+
+    $plastic = trim($plastic);
+    if ($plastic !== '') {
+        $query->where('plastic_type', 'like', '%'.$plastic.'%');
+    }
+
+    $q = trim($q);
+    if ($q !== '') {
+        $query->where('model_name', 'like', '%'.$q.'%');
+    }
+
+    $items = $query
+        ->orderBy('model_name')
+        ->limit(10)
+        ->pluck('model_name')
+        ->values();
+
+    return response()->json(['items' => $items]);
+})->middleware(['auth', 'verified']);
 
 Route::get('discs/{disc}', ShowDiscController::class)
     ->middleware(['auth', 'verified'])

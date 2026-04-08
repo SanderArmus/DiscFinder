@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureRateLimiting();
     }
 
     /**
@@ -46,5 +50,33 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null
         );
+    }
+
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('disc-submissions', function (Request $request) {
+            $user = $request->user();
+            if ($user === null) {
+                return Limit::perMinute(10)->by($request->ip());
+            }
+
+            // Admin should not be rate limited.
+            if ($user->role === 'admin') {
+                return Limit::none();
+            }
+
+            // Allow high-throughput for trusted operators.
+            if ($user->role === 'trusted') {
+                return Limit::perMinute(500)->by('disc-submissions:trusted:'.$user->id);
+            }
+
+            // New accounts get a lower limit (spam prevention).
+            if ($user->created_at !== null && $user->created_at->gt(now()->subDay())) {
+                return Limit::perMinute(30)->by('disc-submissions:new:'.$user->id);
+            }
+
+            // Normal verified users: generous burst-friendly limit.
+            return Limit::perMinute(120)->by('disc-submissions:user:'.$user->id);
+        });
     }
 }

@@ -44,7 +44,120 @@ const form = ref({
     inscription: '',
 });
 
+const plasticSuggestions = ref<string[]>([]);
+const modelSuggestions = ref<string[]>([]);
+
+const manufacturerSuggestions = ref<string[]>([]);
+let manufacturerSuggestionsTimeout: ReturnType<typeof setTimeout> | null = null;
+
+let plasticSuggestionsTimeout: ReturnType<typeof setTimeout> | null = null;
+let modelSuggestionsTimeout: ReturnType<typeof setTimeout> | null = null;
+
+async function fetchCatalogItems(url: string): Promise<string[]> {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return [];
+        const data = (await response.json()) as { items?: unknown };
+        return Array.isArray(data.items) ? (data.items as string[]) : [];
+    } catch (err) {
+        console.error('Catalog suggestions failed', err);
+        return [];
+    }
+}
+
+function refreshPlasticSuggestions(): void {
+    if (plasticSuggestionsTimeout) clearTimeout(plasticSuggestionsTimeout);
+
+    plasticSuggestionsTimeout = setTimeout(async () => {
+        plasticSuggestionsTimeout = null;
+
+        const manufacturer = form.value.manufacturer;
+        const q = form.value.plastic.trim();
+
+        if (!manufacturer || q.length === 0) {
+            plasticSuggestions.value = [];
+            return;
+        }
+
+        const url = `/catalog/plastics?manufacturer=${encodeURIComponent(manufacturer)}&q=${encodeURIComponent(q)}`;
+        plasticSuggestions.value = await fetchCatalogItems(url);
+    }, 250);
+}
+
+function refreshModelSuggestions(): void {
+    if (modelSuggestionsTimeout) clearTimeout(modelSuggestionsTimeout);
+
+    modelSuggestionsTimeout = setTimeout(async () => {
+        modelSuggestionsTimeout = null;
+
+        const manufacturer = form.value.manufacturer;
+        const plastic = form.value.plastic.trim();
+        const q = form.value.name.trim();
+
+        if (!manufacturer || plastic.length === 0 || q.length === 0) {
+            modelSuggestions.value = [];
+            return;
+        }
+
+        const url = `/catalog/models?manufacturer=${encodeURIComponent(manufacturer)}&plastic=${encodeURIComponent(plastic)}&q=${encodeURIComponent(q)}`;
+        modelSuggestions.value = await fetchCatalogItems(url);
+    }, 250);
+}
+
+function onPlasticInput(): void {
+    refreshPlasticSuggestions();
+    modelSuggestions.value = [];
+}
+
+function refreshManufacturerSuggestions(): void {
+    if (manufacturerSuggestionsTimeout) clearTimeout(manufacturerSuggestionsTimeout);
+
+    manufacturerSuggestionsTimeout = setTimeout(async () => {
+        manufacturerSuggestionsTimeout = null;
+
+        const q = form.value.manufacturer.trim();
+        if (q.length === 0) {
+            manufacturerSuggestions.value = [];
+            return;
+        }
+
+        const url = `/catalog/manufacturers?q=${encodeURIComponent(q)}`;
+        manufacturerSuggestions.value = await fetchCatalogItems(url);
+    }, 250);
+}
+
+function onManufacturerInput(): void {
+    refreshManufacturerSuggestions();
+    plasticSuggestions.value = [];
+    modelSuggestions.value = [];
+}
+
+function onNameInput(): void {
+    refreshModelSuggestions();
+}
+
 const colorSectionOpen = ref(false);
+
+watch(
+    () => form.value.manufacturer,
+    () => {
+        plasticSuggestions.value = [];
+        modelSuggestions.value = [];
+
+        if (form.value.plastic.trim().length > 0) {
+            refreshPlasticSuggestions();
+        }
+    },
+);
+
+watch(
+    () => form.value.plastic,
+    () => {
+        if (form.value.name.trim().length > 0) {
+            refreshModelSuggestions();
+        }
+    },
+);
 
 function togglePresetColor(hex: string): void {
     const arr = form.value.selectedColors;
@@ -239,20 +352,22 @@ async function searchLocationOnMap(): Promise<void> {
 
                                 <div class="space-y-2">
                                     <Label for="manufacturer">{{ t('Manufacturer') }}</Label>
-                                    <select
+                                    <input
                                         id="manufacturer"
                                         v-model="form.manufacturer"
+                                        type="text"
                                         :class="selectClass"
-                                    >
-                                        <option disabled value="">
-                                            {{ t('Select manufacturer') }}
-                                        </option>
-                                        <option value="discraft">Discraft</option>
-                                        <option value="innova">Innova</option>
-                                        <option value="mvp">MVP</option>
-                                        <option value="dynamic">Dynamic Discs</option>
-                                        <option value="other">Other</option>
-                                    </select>
+                                        list="manufacturer-suggestions"
+                                        :placeholder="t('Select manufacturer')"
+                                        @input="onManufacturerInput"
+                                    />
+                                    <datalist id="manufacturer-suggestions">
+                                        <option
+                                            v-for="m in manufacturerSuggestions"
+                                            :key="m"
+                                            :value="m"
+                                        />
+                                    </datalist>
                                 </div>
 
                                 <div class="space-y-2">
@@ -262,7 +377,16 @@ async function searchLocationOnMap(): Promise<void> {
                                         v-model="form.name"
                                         type="text"
                                         :class="inputClass"
+                                        list="model-suggestions"
+                                        @input="onNameInput"
                                     />
+                                    <datalist id="model-suggestions">
+                                        <option
+                                            v-for="m in modelSuggestions"
+                                            :key="m"
+                                            :value="m"
+                                        />
+                                    </datalist>
                                 </div>
 
                                 <div class="space-y-2">
@@ -272,7 +396,16 @@ async function searchLocationOnMap(): Promise<void> {
                                         v-model="form.plastic"
                                         type="text"
                                         :class="inputClass"
+                                        list="plastic-suggestions"
+                                        @input="onPlasticInput"
                                     />
+                                    <datalist id="plastic-suggestions">
+                                        <option
+                                            v-for="p in plasticSuggestions"
+                                            :key="p"
+                                            :value="p"
+                                        />
+                                    </datalist>
                                 </div>
 
                                 <div class="space-y-2">

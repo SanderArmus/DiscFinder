@@ -63,11 +63,12 @@ final class MatchScorer
         $identityScore = $this->scoreIdentity($lost, $found);
 
         // Weights can be tuned later based on confirmed/rejected feedback.
+        // Distance is intentionally not dominant (a disc may be carried far away).
         $matchScore = (0.20 * $timeScore)
-            + (0.30 * $distanceScore)
-            + (0.30 * $colorScore)
+            + (0.15 * $distanceScore)
+            + (0.35 * $colorScore)
             + (0.10 * $conditionScore)
-            + (0.10 * $identityScore);
+            + (0.20 * $identityScore);
 
         return [
             'match_score' => round($matchScore, 2),
@@ -95,12 +96,23 @@ final class MatchScorer
             return 100.0;
         }
 
-        if ($distanceKm <= 5.0) {
-            // Linear interpolation: (1km => 100) ... (5km => 0)
-            return max(0.0, (5.0 - $distanceKm) / 4.0 * 100.0);
+        // Gradual decay:
+        // - 1km..10km: 100 -> 70
+        // - 10km..50km: 70 -> 40
+        // - 50km..200km: 40 -> 20 (never goes to 0; discs can travel)
+        if ($distanceKm <= 10.0) {
+            return max(70.0, 100.0 - (($distanceKm - 1.0) / 9.0) * 30.0);
         }
 
-        return 0.0;
+        if ($distanceKm <= 50.0) {
+            return max(40.0, 70.0 - (($distanceKm - 10.0) / 40.0) * 30.0);
+        }
+
+        if ($distanceKm <= 200.0) {
+            return max(20.0, 40.0 - (($distanceKm - 50.0) / 150.0) * 20.0);
+        }
+
+        return 20.0;
     }
 
     private function scoreTimeGapDays(float $gapDays): float

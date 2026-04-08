@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { MessageSquare } from 'lucide-vue-next';
 import { useTranslations } from '@/composables/useTranslations';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
@@ -60,7 +61,7 @@ function statusLabel(disc: Disc): string {
     <Head title="My Profile" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col overflow-x-auto">
+        <div class="flex h-full flex-1 flex-col overflow-x-hidden sm:overflow-x-auto">
             <div class="flex flex-1 flex-col gap-6 p-4">
                 <!-- Page Header -->
                 <div
@@ -111,30 +112,22 @@ function statusLabel(disc: Disc): string {
                     <div
                         class="overflow-hidden rounded-xl border border-sidebar-border bg-card shadow-sm dark:border-sidebar-border"
                     >
-                        <div class="overflow-x-auto">
-                            <table class="w-full border-collapse text-left">
+                        <div class="overflow-x-hidden">
+                            <table class="w-full table-fixed border-collapse text-left">
                                 <thead>
                                     <tr
                                         class="border-b border-sidebar-border bg-muted/50 dark:border-sidebar-border"
                                     >
-                                        <th
-                                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                        >
+                                        <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ t('Disc Name') }}
                                         </th>
-                                        <th
-                                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                        >
-                                            {{ t('Plastic / Brand') }}
+                                        <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                            {{ t('Plastic') }}
                                         </th>
-                                        <th
-                                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                        >
+                                        <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ t('Color') }}
                                         </th>
-                                        <th
-                                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                        >
+                                        <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                             {{ t('Status') }}
                                         </th>
                                     </tr>
@@ -142,13 +135,10 @@ function statusLabel(disc: Disc): string {
                                 <tbody
                                     class="divide-y divide-sidebar-border dark:divide-sidebar-border"
                                 >
-                                    <tr
-                                        v-if="activeDiscs.length === 0"
-                                        class="text-center text-muted-foreground"
-                                    >
+                                    <tr v-if="activeDiscs.length === 0" class="text-center text-muted-foreground">
                                         <td
                                             colspan="4"
-                                            class="px-6 py-12 text-sm"
+                                            class="px-3 sm:px-6 py-12 text-sm"
                                         >
                                             {{ t('No active reported discs yet.') }}
                                         </td>
@@ -158,10 +148,10 @@ function statusLabel(disc: Disc): string {
                                         :key="disc.id"
                                         class="transition-colors hover:bg-muted/30"
                                     >
-                                        <td class="px-6 py-5">
+                                        <td class="px-3 sm:px-6 py-5 wrap-break-word">
                                             <Link
                                                 :href="`/discs/${disc.id}`"
-                                                class="font-bold text-foreground hover:text-primary"
+                                                class="wrap-break-word font-bold text-foreground hover:text-primary"
                                             >
                                                 {{ disc.name }}
                                             </Link>
@@ -172,16 +162,16 @@ function statusLabel(disc: Disc): string {
                                             </div>
                                         </td>
                                         <td
-                                            class="px-6 py-5 text-sm text-muted-foreground"
+                                            class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word"
                                         >
                                             {{ disc.brand }}
                                         </td>
                                         <td
-                                            class="px-6 py-5 text-sm text-muted-foreground"
+                                            class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word"
                                         >
                                             {{ disc.color }}
                                         </td>
-                                        <td class="px-6 py-5">
+                                        <td class="px-3 sm:px-6 py-5">
                                             <span
                                                 class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
                                                 :class="
@@ -229,30 +219,22 @@ function statusLabel(disc: Disc): string {
                         <div
                             class="overflow-hidden rounded-xl border border-sidebar-border bg-card shadow-sm dark:border-sidebar-border"
                         >
-                            <div class="overflow-x-auto">
-                                <table class="w-full border-collapse text-left">
+                            <div class="overflow-x-hidden">
+                                <table class="w-full table-fixed border-collapse text-left">
                                     <thead>
                                         <tr
                                             class="border-b border-sidebar-border bg-muted/50 dark:border-sidebar-border"
                                         >
-                                            <th
-                                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                            >
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Disc Name') }}
                                             </th>
-                                            <th
-                                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                            >
-                                                {{ t('Plastic / Brand') }}
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                                {{ t('Plastic') }}
                                             </th>
-                                            <th
-                                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                            >
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Color') }}
                                             </th>
-                                            <th
-                                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                                            >
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Status') }}
                                             </th>
                                         </tr>
@@ -264,10 +246,7 @@ function statusLabel(disc: Disc): string {
                                             v-if="matchHistoryDiscs.length === 0"
                                             class="text-center text-muted-foreground"
                                         >
-                                            <td
-                                                colspan="4"
-                                                class="px-6 py-12 text-sm"
-                                            >
+                                            <td colspan="4" class="px-3 sm:px-6 py-12 text-sm">
                                                 {{ t('No match history yet.') }}
                                             </td>
                                         </tr>
@@ -276,7 +255,7 @@ function statusLabel(disc: Disc): string {
                                             :key="disc.id"
                                             class="transition-colors hover:bg-muted/30"
                                         >
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 sm:px-6 py-5 wrap-break-word">
                                                 <div
                                                     class="font-bold text-foreground"
                                                 >
@@ -288,17 +267,13 @@ function statusLabel(disc: Disc): string {
                                                     {{ t('Reported') }} {{ disc.reportedAt }}
                                                 </div>
                                             </td>
-                                            <td
-                                                class="px-6 py-5 text-sm text-muted-foreground"
-                                            >
+                                            <td class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word">
                                                 {{ disc.brand }}
                                             </td>
-                                            <td
-                                                class="px-6 py-5 text-sm text-muted-foreground"
-                                            >
+                                            <td class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word">
                                                 {{ disc.color }}
                                             </td>
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 sm:px-6 py-5">
                                                 <span
                                                     class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
                                                     :class="
@@ -385,8 +360,9 @@ function statusLabel(disc: Disc): string {
                                 <div class="flex gap-2">
                                     <Link
                                         :href="`/matches/${match.id}`"
-                                        class="flex-1 rounded bg-primary py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                                        class="flex flex-1 items-center justify-center gap-2 rounded bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
                                     >
+                                        <MessageSquare class="h-4 w-4" />
                                         {{ t('Leave a message') }}
                                     </Link>
                                     <Link
@@ -426,20 +402,20 @@ function statusLabel(disc: Disc): string {
                             </span>
                         </div>
                         <div class="overflow-hidden rounded-xl border border-sidebar-border bg-card shadow-sm dark:border-sidebar-border">
-                            <div class="overflow-x-auto">
-                                <table class="w-full border-collapse text-left">
+                            <div class="overflow-x-hidden">
+                                <table class="w-full table-fixed border-collapse text-left">
                                     <thead>
                                         <tr class="border-b border-sidebar-border bg-muted/50 dark:border-sidebar-border">
-                                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Disc Name') }}
                                             </th>
-                                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                                {{ t('Plastic / Brand') }}
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                                {{ t('Plastic') }}
                                             </th>
-                                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Color') }}
                                             </th>
-                                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                            <th class="px-3 sm:px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                                 {{ t('Status') }}
                                             </th>
                                         </tr>
@@ -449,7 +425,7 @@ function statusLabel(disc: Disc): string {
                                             v-if="matchHistoryDiscs.length === 0"
                                             class="text-center text-muted-foreground"
                                         >
-                                            <td colspan="4" class="px-6 py-12 text-sm">
+                                            <td colspan="4" class="px-3 sm:px-6 py-12 text-sm">
                                                 {{ t('No match history yet.') }}
                                             </td>
                                         </tr>
@@ -458,7 +434,7 @@ function statusLabel(disc: Disc): string {
                                             :key="disc.id"
                                             class="transition-colors hover:bg-muted/30"
                                         >
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 sm:px-6 py-5 wrap-break-word">
                                                 <div class="font-bold text-foreground">
                                                     {{ disc.name }}
                                                 </div>
@@ -466,13 +442,13 @@ function statusLabel(disc: Disc): string {
                                                     {{ t('Reported') }} {{ disc.reportedAt }}
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-5 text-sm text-muted-foreground">
+                                            <td class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word">
                                                 {{ disc.brand }}
                                             </td>
-                                            <td class="px-6 py-5 text-sm text-muted-foreground">
+                                            <td class="px-3 sm:px-6 py-5 text-sm text-muted-foreground wrap-break-word">
                                                 {{ disc.color }}
                                             </td>
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 sm:px-6 py-5">
                                                 <span
                                                     class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
                                                     :class="

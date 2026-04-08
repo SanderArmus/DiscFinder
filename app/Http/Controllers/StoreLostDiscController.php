@@ -6,6 +6,7 @@ use App\Http\Requests\StoreLostDiscRequest;
 use App\Models\Disc;
 use App\Models\Location;
 use App\Services\DiscColorResolver;
+use App\Services\MatchFinder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 
@@ -49,6 +50,8 @@ class StoreLostDiscController extends Controller
             $request->input('selectedColors', [])
         );
         $disc->colors()->sync($colorIds);
+
+        app(MatchFinder::class)->findForDisc($disc, limit: 5, minScore: 60.0);
 
         return redirect()->route('dashboard')->with('status', 'lost-disc-created');
     }
