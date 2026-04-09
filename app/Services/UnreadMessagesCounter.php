@@ -21,6 +21,9 @@ final class UnreadMessagesCounter
                 $join->on('mtr.match_id', '=', 'messages.match_id');
                 $join->on('mtr.user_id', '=', 'messages.receiver_id');
             })
+            // Support messages (match_id = null) don't have read-tracking yet,
+            // so exclude them to avoid a permanent unread badge.
+            ->whereNotNull('messages.match_id')
             ->where('messages.receiver_id', $user->id)
             ->where(static function (Builder $q) {
                 $q->whereNull('mtr.last_read_at')

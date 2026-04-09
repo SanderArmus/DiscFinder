@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatBlock;
 use App\Models\MatchThread;
 use App\Models\MatchThreadRead;
 use Illuminate\Support\Facades\Schema;
@@ -52,6 +53,20 @@ class ShowMatchChatController extends Controller
         $displayDisc = $isLostOwner ? $match->foundDisc : $match->lostDisc;
         $displayDiscId = $displayDisc->id;
         $otherUser = $isLostOwner ? $match->foundDisc->user : $match->lostDisc->user;
+
+        $blocked = false;
+        if ($otherUser !== null) {
+            $blocked = ChatBlock::query()
+                ->where('match_id', $match->id)
+                ->where(function ($q) use ($user, $otherUser) {
+                    $q->where(function ($q2) use ($user, $otherUser) {
+                        $q2->where('blocker_id', $user->id)->where('blocked_id', $otherUser->id);
+                    })->orWhere(function ($q2) use ($user, $otherUser) {
+                        $q2->where('blocker_id', $otherUser->id)->where('blocked_id', $user->id);
+                    });
+                })
+                ->exists();
+        }
 
         $displayName = $displayDisc->model_name
             ? trim(implode(' ', array_filter([
@@ -146,6 +161,7 @@ class ShowMatchChatController extends Controller
             'ownHandedOver' => $ownHandedOver,
             'otherHandedOver' => $otherHandedOver,
             'matchStatus' => $matchStatus,
+            'chatBlocked' => $blocked,
         ]);
     }
 }

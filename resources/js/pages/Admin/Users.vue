@@ -13,6 +13,8 @@ type UserRow = {
     name: string | null;
     email: string | null;
     role: string | null;
+    bannedAt?: string | null;
+    bannedReason?: string | null;
     createdAt: string | null;
 };
 
@@ -63,6 +65,8 @@ function clearFilters(): void {
 
 type RoleDraft = {
     role: '' | 'user' | 'trusted' | 'admin';
+    banned: boolean;
+    bannedReason: string;
 };
 
 const editingUserId = ref<number | null>(null);
@@ -71,7 +75,11 @@ const roleDrafts = reactive<Record<number, RoleDraft>>({});
 function startEdit(user: UserRow): void {
     editingUserId.value = user.id;
     const role = user.role === 'admin' || user.role === 'trusted' ? user.role : 'user';
-    roleDrafts[user.id] = { role };
+    roleDrafts[user.id] = {
+        role,
+        banned: Boolean(user.bannedAt),
+        bannedReason: user.bannedReason || '',
+    };
 }
 
 function cancelEdit(userId: number): void {
@@ -89,7 +97,11 @@ function saveEdit(userId: number): void {
 
     router.patch(
         `/admin/users/${userId}`,
-        { role } as any,
+        {
+            role,
+            banned: draft.banned,
+            banned_reason: draft.banned ? (draft.bannedReason || undefined) : undefined,
+        } as any,
         {
             preserveScroll: true,
             preserveState: true,
@@ -143,6 +155,19 @@ function roleLabel(role: string | null): string {
                                 >
                                     {{ t('Users') }}
                                 </Link>
+
+                                <Link
+                                    href="/admin/support-messages"
+                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
+                                >
+                                    {{ t('Support messages') }}
+                                </Link>
+                                <Link
+                                    href="/admin/chat-reports"
+                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
+                                >
+                                    {{ t('Reports') }}
+                                </Link>
                             </nav>
                         </div>
 
@@ -192,6 +217,7 @@ function roleLabel(role: string | null): string {
                                 <th class="px-4 py-3">{{ t('Username') }}</th>
                                 <th class="px-4 py-3">{{ t('Email Address') }}</th>
                                 <th class="px-4 py-3">{{ t('Role') }}</th>
+                                <th class="px-4 py-3">{{ t('Ban') }}</th>
                                 <th class="px-4 py-3">{{ t('Created') }}</th>
                                 <th class="px-4 py-3">{{ t('Actions') }}</th>
                             </tr>
@@ -229,6 +255,30 @@ function roleLabel(role: string | null): string {
                                         </span>
                                     </template>
                                 </td>
+                                <td class="px-4 py-3">
+                                    <template v-if="editingUserId === user.id">
+                                        <label class="flex items-center gap-2 text-sm text-foreground">
+                                            <input v-model="roleDrafts[user.id].banned" type="checkbox" class="h-4 w-4" />
+                                            <span class="font-bold">{{ t('Banned') }}</span>
+                                        </label>
+                                        <input
+                                            v-if="roleDrafts[user.id].banned"
+                                            v-model="roleDrafts[user.id].bannedReason"
+                                            type="text"
+                                            class="mt-2 h-9 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                                            :placeholder="t('Reason')"
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span
+                                            v-if="user.bannedAt"
+                                            class="inline-flex items-center rounded-full bg-destructive/15 px-2.5 py-0.5 text-xs font-bold text-destructive"
+                                        >
+                                            {{ t('Banned') }}
+                                        </span>
+                                        <span v-else class="text-xs text-muted-foreground">—</span>
+                                    </template>
+                                </td>
                                 <td class="px-4 py-3 text-xs text-muted-foreground">
                                     {{ user.createdAt ?? '—' }}
                                 </td>
@@ -263,7 +313,7 @@ function roleLabel(role: string | null): string {
                             </tr>
 
                             <tr v-if="props.users.data.length === 0">
-                                <td colspan="6" class="px-4 py-10 text-center text-sm text-muted-foreground">
+                                <td colspan="7" class="px-4 py-10 text-center text-sm text-muted-foreground">
                                     {{ t('No results found.') }}
                                 </td>
                             </tr>

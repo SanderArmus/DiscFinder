@@ -61,6 +61,8 @@ class AdminUsersController
 
         $validated = $request->validate([
             'role' => ['nullable', 'string', Rule::in(['admin', 'trusted', 'user'])],
+            'banned' => ['nullable', 'boolean'],
+            'banned_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($user->id === $authUser->id && ($validated['role'] ?? null) !== 'admin') {
@@ -70,7 +72,19 @@ class AdminUsersController
         $role = $validated['role'] ?? null;
         $role = $role === 'user' ? null : $role;
 
-        $user->forceFill(['role' => $role])->save();
+        $user->forceFill(['role' => $role]);
+
+        if (array_key_exists('banned', $validated)) {
+            if ((bool) $validated['banned']) {
+                $user->banned_at = now();
+                $user->banned_reason = $validated['banned_reason'] ?? null;
+            } else {
+                $user->banned_at = null;
+                $user->banned_reason = null;
+            }
+        }
+
+        $user->save();
 
         return redirect()->back();
     }

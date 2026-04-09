@@ -1,20 +1,27 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDiscsController;
+use App\Http\Controllers\Admin\AdminSupportMessagesController;
 use App\Http\Controllers\Admin\AdminUsersController;
 use App\Http\Controllers\Auth\FacebookAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ConfirmMatchController;
 use App\Http\Controllers\DeleteDiscController;
+use App\Http\Controllers\EndChatController;
+use App\Http\Controllers\EndSupportChatController;
 use App\Http\Controllers\HandOverMatchController;
 use App\Http\Controllers\RejectMatchController;
 use App\Http\Controllers\ShowDiscController;
 use App\Http\Controllers\ShowHelpController;
 use App\Http\Controllers\ShowMatchChatController;
 use App\Http\Controllers\ShowMatchDetailsController;
+use App\Http\Controllers\ShowSupportChatController;
+use App\Http\Controllers\StoreAdminMessageController;
+use App\Http\Controllers\StoreChatReportController;
 use App\Http\Controllers\StoreFoundDiscController;
 use App\Http\Controllers\StoreLostDiscController;
 use App\Http\Controllers\StoreMatchMessageController;
+use App\Http\Controllers\StoreSupportMessageController;
 use App\Http\Controllers\UpdateDiscController;
 use App\Models\Disc;
 use App\Services\MatchChatFinder;
@@ -76,14 +83,72 @@ Route::get('messages', function () {
 
     $threads = app(MatchChatFinder::class)->findThreadsForUser($user, limit: 50);
 
+    // Support thread (messages with match_id = null)
+    $admin = \App\Models\User::query()->where('role', 'admin')->orderBy('id')->first();
+    $supportThread = null;
+    if ($admin !== null) {
+        $blocked = \App\Models\ChatBlock::query()
+            ->whereNull('match_id')
+            ->where(function ($q) use ($user, $admin) {
+                $q->where(function ($q2) use ($user, $admin) {
+                    $q2->where('blocker_id', $user->id)->where('blocked_id', $admin->id);
+                })->orWhere(function ($q2) use ($user, $admin) {
+                    $q2->where('blocker_id', $admin->id)->where('blocked_id', $user->id);
+                });
+            })
+            ->exists();
+
+        $lastSupportMessage = \App\Models\Message::query()
+            ->whereNull('match_id')
+            ->where(function ($q) use ($user, $admin) {
+                $q->where(function ($q2) use ($user, $admin) {
+                    $q2->where('sender_id', $user->id)->where('receiver_id', $admin->id);
+                })->orWhere(function ($q2) use ($user, $admin) {
+                    $q2->where('sender_id', $admin->id)->where('receiver_id', $user->id);
+                });
+            })
+            ->latest('created_at')
+            ->first();
+
+        if ($lastSupportMessage !== null) {
+            $supportThread = [
+                'otherUserName' => $admin->username ?: ($admin->name ?: 'Admin'),
+                'lastMessagePreview' => \Illuminate\Support\Str::limit((string) $lastSupportMessage->content, 80, '...'),
+                'lastMessageAt' => $lastSupportMessage->created_at?->format('M j, H:i') ?? '',
+                'blocked' => $blocked,
+            ];
+        }
+    }
+
     return Inertia::render('Messages', [
         'threads' => $threads,
+        'supportThread' => $supportThread,
     ]);
 })->middleware(['auth', 'verified'])->name('messages.index');
+
+Route::get('support/chat', ShowSupportChatController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('support.chat');
+
+Route::post('support/messages', StoreSupportMessageController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('support.messages.store');
+
+Route::post('support/chat/end', EndSupportChatController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('support.chat.end');
+
+Route::post('chat-reports', StoreChatReportController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('chat-reports.store');
 
 Route::get('help', ShowHelpController::class)
     ->middleware(['auth', 'verified'])
     ->name('help');
+
+Route::post('help/message-to-admin', StoreAdminMessageController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('help.admin-message.store');
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('discs', [AdminDiscsController::class, 'index'])->name('admin.discs.index');
@@ -92,6 +157,14 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users', [AdminUsersController::class, 'index'])->name('admin.users.index');
     Route::patch('users/{user}', [AdminUsersController::class, 'update'])->name('admin.users.update');
+
+    Route::get('support-messages', [AdminSupportMessagesController::class, 'index'])
+        ->name('admin.support-messages.index');
+    Route::post('support-messages/{message}/reply', [AdminSupportMessagesController::class, 'reply'])
+        ->name('admin.support-messages.reply');
+
+    Route::get('chat-reports', [\App\Http\Controllers\Admin\ChatReportsController::class, 'index'])
+        ->name('admin.chat-reports.index');
 });
 
 Route::get('lost-discs', function () {
@@ -248,6 +321,10 @@ Route::get('matches/{match}/details', ShowMatchDetailsController::class)
 Route::post('matches/{match}/messages', StoreMatchMessageController::class)
     ->middleware(['auth', 'verified'])
     ->name('matches.messages.store');
+
+Route::post('matches/{match}/end', EndChatController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('matches.end');
 
 Route::post('matches/{match}/confirm', ConfirmMatchController::class)
     ->middleware(['auth', 'verified'])

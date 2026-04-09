@@ -370,6 +370,18 @@ function urlWithTab(
                                 >
                                     {{ t('Users') }}
                                 </Link>
+                                <Link
+                                    href="/admin/support-messages"
+                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
+                                >
+                                    {{ t('Support messages') }}
+                                </Link>
+                                <Link
+                                    href="/admin/chat-reports"
+                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
+                                >
+                                    {{ t('Reports') }}
+                                </Link>
                             </nav>
                         </div>
                         <h1 class="mt-4 text-2xl font-bold text-foreground">

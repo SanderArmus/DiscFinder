@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ArrowLeftRight, Send, SmilePlus, X } from 'lucide-vue-next';
+import { ArrowLeftRight, Flag, Send, SmilePlus, X } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { useTranslations } from '@/composables/useTranslations';
 import { dashboard } from '@/routes';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 const t = useTranslations();
 
@@ -43,6 +50,7 @@ const props = defineProps<{
     ownHandedOver: boolean;
     otherHandedOver: boolean;
     matchStatus: string;
+    chatBlocked: boolean;
 }>();
 
 const breadcrumbs = computed(() => [
@@ -52,6 +60,10 @@ const breadcrumbs = computed(() => [
 const content = ref('');
 const sending = ref(false);
 const error = ref<string | null>(null);
+const reportOpen = ref(false);
+const reportReason = ref<'harassment' | 'spam' | 'scam' | 'other'>('harassment');
+const reportDetails = ref('');
+const reportAlsoBlock = ref(true);
 const messagesEl = ref<HTMLElement | null>(null);
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
 const emojiOpen = ref(false);
@@ -182,6 +194,7 @@ function handleComposerKeydown(e: KeyboardEvent): void {
 }
 
 function sendMessage(): void {
+    if (props.chatBlocked) return;
     const value = applyEmoticonsToMessage(content.value.trim());
     if (!value) return;
 
@@ -199,6 +212,34 @@ function sendMessage(): void {
             onFinish: () => {
                 sending.value = false;
                 content.value = '';
+            },
+        },
+    );
+}
+
+function endChat(): void {
+    if (!window.confirm(t('Are you sure you want to block this user?'))) {
+        return;
+    }
+
+    router.post(`/matches/${props.match.id}/end`, {}, { preserveScroll: true });
+}
+
+function submitReport(): void {
+    router.post(
+        '/chat-reports',
+        {
+            context: 'match',
+            match_id: props.match.id,
+            reason: reportReason.value,
+            details: reportDetails.value || null,
+            also_block: reportAlsoBlock.value,
+        } as any,
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                reportOpen.value = false;
+                reportDetails.value = '';
             },
         },
     );
@@ -269,12 +310,42 @@ watch(
                         <X class="h-4 w-4" />
                     </Link>
 
+                    <button
+                        v-if="!props.chatBlocked"
+                        type="button"
+                        class="absolute right-14 top-5 inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-muted/50 text-foreground transition-colors hover:bg-muted"
+                        :title="t('Report')"
+                        :aria-label="t('Report')"
+                        @click="reportOpen = true"
+                    >
+                        <Flag class="h-4 w-4" />
+                    </button>
+
                     <div class="flex items-start">
                         <div class="min-w-0 flex-1 pr-10">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h1 class="truncate text-xl font-bold text-foreground">
                                     {{ props.otherUserName }}
                                 </h1>
+                                <button
+                                    v-if="!props.chatBlocked"
+                                    type="button"
+                                    class="inline-flex h-7 items-center justify-center rounded-full border border-destructive/40 bg-destructive/10 px-2.5 text-[11px] font-bold text-destructive transition-colors hover:bg-destructive/20"
+                                    @click="endChat"
+                                >
+                                    {{ t('Block user') }}
+                                </button>
+                                <button
+                                    v-else
+                                    type="button"
+                                    class="inline-flex h-7 items-center justify-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 text-[11px] font-bold text-destructive transition-colors hover:bg-destructive/20"
+                                    :title="t('Report')"
+                                    :aria-label="t('Report')"
+                                    @click="reportOpen = true"
+                                >
+                                    <Flag class="h-3 w-3 shrink-0" />
+                                    {{ t('Report') }}
+                                </button>
                                 <span
                                     class="inline-flex h-7 shrink-0 items-center rounded-full border px-3 text-[11px] font-bold"
                                     :class="matchStatusClass"
@@ -342,7 +413,7 @@ watch(
                         </div>
                     </div>
 
-                    <div class="mt-4 space-y-2">
+                    <div v-if="!props.chatBlocked" class="mt-4 space-y-2">
                         <div
                             v-if="!bothConfirmed && props.matchStatus !== 'rejected' && props.matchStatus !== 'confirmed' && props.matchStatus !== 'handed_over'"
                             class="grid grid-cols-1 gap-2 sm:grid-cols-2"
@@ -416,6 +487,12 @@ watch(
                         </button>
 
                     </div>
+                    <div
+                        v-else
+                        class="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground"
+                    >
+                        {{ t('Chat ended') }}
+                    </div>
                 </div>
 
                 <!-- Messages (scrollable) + composer -->
@@ -466,6 +543,7 @@ watch(
                                 @keydown="handleComposerKeydown"
                                 class="min-h-[56px] w-full resize-none rounded-lg border border-input bg-background px-3 py-2 pr-12 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 :placeholder="t('Type your message...')"
+                                :disabled="props.chatBlocked"
                             />
 
                             <div class="absolute right-12 top-1/2 -translate-y-1/2">
@@ -505,7 +583,7 @@ watch(
                             <button
                                 type="submit"
                                 class="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-                                :disabled="sending || !content.trim()"
+                                :disabled="props.chatBlocked || sending || !content.trim()"
                                 :aria-label="t('Send')"
                                 :title="t('Send')"
                             >
@@ -524,5 +602,63 @@ watch(
             </div>
         </div>
     </AppLayout>
+
+    <Dialog :open="reportOpen" @update:open="reportOpen = $event">
+        <DialogContent class="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle>{{ t('Report') }}</DialogTitle>
+                <DialogDescription>
+                    {{ t('Report message hint') }}
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="mt-3 space-y-3">
+                <label class="block text-sm font-bold text-foreground">
+                    {{ t('Reason') }}
+                </label>
+                <select
+                    v-model="reportReason"
+                    class="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                >
+                    <option value="harassment">{{ t('Harassment') }}</option>
+                    <option value="spam">{{ t('Spam') }}</option>
+                    <option value="scam">{{ t('Scam') }}</option>
+                    <option value="other">{{ t('Other') }}</option>
+                </select>
+
+                <label class="block text-sm font-bold text-foreground">
+                    {{ t('Details (optional)') }}
+                </label>
+                <textarea
+                    v-model="reportDetails"
+                    rows="4"
+                    class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 dark:bg-muted/30"
+                    :placeholder="t('Write your message')"
+                />
+
+                <label class="flex items-center gap-2 text-sm text-foreground">
+                    <input v-model="reportAlsoBlock" type="checkbox" class="h-4 w-4" />
+                    <span class="font-bold">{{ t('Also block user') }}</span>
+                </label>
+            </div>
+
+            <div class="mt-4 flex items-center justify-end gap-2">
+                <button
+                    type="button"
+                    class="h-10 rounded-lg border border-input bg-muted/50 px-4 text-sm font-bold text-foreground hover:bg-muted"
+                    @click="reportOpen = false"
+                >
+                    {{ t('Cancel') }}
+                </button>
+                <button
+                    type="button"
+                    class="h-10 rounded-lg bg-destructive px-4 text-sm font-bold text-white hover:opacity-90"
+                    @click="submitReport"
+                >
+                    {{ t('Report') }}
+                </button>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
 

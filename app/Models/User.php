@@ -26,6 +26,8 @@ class User extends Authenticatable
         'facebook_id',
         'google_id',
         'password',
+        'banned_at',
+        'banned_reason',
     ];
 
     /**
@@ -51,6 +53,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'banned_at' => 'datetime',
         ];
     }
 
