@@ -15,7 +15,6 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = computed(() => [
-    { title: t('My Profile'), href: '/dashboard' },
     { title: t('Banned'), href: '/banned' },
 ]);
 </script>

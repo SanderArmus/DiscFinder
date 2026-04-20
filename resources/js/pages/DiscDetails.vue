@@ -306,6 +306,10 @@ function renewDisc(): void {
                         <p class="mt-1 text-sm text-muted-foreground">
                             {{ t('You can renew it for 90 days with one click.') }}
                         </p>
+                        <p v-if="props.disc.expiresAt" class="mt-1 text-sm text-muted-foreground">
+                            <span class="font-bold text-foreground">{{ t('Expired at') }}:</span>
+                            {{ props.disc.expiresAt }}
+                        </p>
                     </div>
                     <button
                         type="button"
@@ -337,6 +341,10 @@ function renewDisc(): void {
                         </p>
                         <p class="mt-2 text-sm text-muted-foreground">
                             {{ statusLabel(props.disc) }}
+                        </p>
+                        <p v-if="props.disc.expiresAt" class="mt-2 text-sm text-muted-foreground">
+                            <span class="font-bold text-foreground">{{ t('Expires at') }}:</span>
+                            {{ props.disc.expiresAt }}
                         </p>
                     </div>
                     <div class="flex flex-col items-end gap-2">
