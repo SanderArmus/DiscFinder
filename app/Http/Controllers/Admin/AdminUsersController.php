@@ -47,6 +47,8 @@ class AdminUsersController
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'bannedAt' => $user->banned_at?->format('Y-m-d H:i:s'),
+                'bannedReason' => $user->banned_reason,
                 'createdAt' => $user->created_at?->format('Y-m-d H:i:s'),
             ]),
         ]);

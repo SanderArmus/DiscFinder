@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
+import TextLink from '@/components/TextLink.vue';
 import { useTranslations } from '@/composables/useTranslations';
 import { logout } from '@/routes';
 
@@ -45,9 +46,9 @@ const breadcrumbs = computed(() => [
 
                 <div class="mt-6 flex flex-wrap gap-2">
                     <Button as-child variant="outline">
-                        <Link :href="logout()">
+                        <TextLink :href="logout()" as="button">
                             {{ t('Log out') }}
-                        </Link>
+                        </TextLink>
                     </Button>
                 </div>
             </div>
