@@ -19,7 +19,7 @@ class EnsureNotBanned
         if ($user !== null && $user->banned_at !== null) {
             $routeName = Route::currentRouteName();
 
-            if ($routeName !== 'banned') {
+            if (! in_array($routeName, ['banned', 'logout'], true)) {
                 return redirect()->route('banned');
             }
         }

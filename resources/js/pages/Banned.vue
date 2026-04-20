@@ -46,7 +46,7 @@ const breadcrumbs = computed(() => [
 
                 <div class="mt-6 flex flex-wrap gap-2">
                     <Button as-child variant="outline">
-                        <TextLink :href="logout()" as="button">
+                        <TextLink :href="logout()" as="button" method="post">
                             {{ t('Log out') }}
                         </TextLink>
                     </Button>
