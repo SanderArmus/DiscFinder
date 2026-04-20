@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -35,8 +35,25 @@ const form = reactive({
     email_notify_new_message: props.preferences.emailNotifyNewMessage,
 });
 
+const saving = ref(false);
+const saved = ref(false);
+
 function save(): void {
-    router.patch('/settings/notifications', form, { preserveScroll: true });
+    saving.value = true;
+    saved.value = false;
+
+    router.patch('/settings/notifications', form, {
+        preserveScroll: true,
+        onSuccess: () => {
+            saved.value = true;
+            window.setTimeout(() => {
+                saved.value = false;
+            }, 2000);
+        },
+        onFinish: () => {
+            saving.value = false;
+        },
+    });
 }
 </script>
 
@@ -108,7 +125,14 @@ function save(): void {
                     />
 
                     <div class="flex justify-end pt-2">
-                        <Button @click="save">Save</Button>
+                        <div class="flex items-center gap-3">
+                            <span v-if="saved" class="text-sm font-medium text-green-600">
+                                Saved.
+                            </span>
+                            <Button :disabled="saving" @click="save">
+                                {{ saving ? 'Saving…' : 'Save' }}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
