@@ -25,6 +25,7 @@ class RenewDiscController extends Controller
         $disc->forceFill([
             'active' => true,
             'expires_at' => now()->addDays(90),
+            'expiring_soon_notified_at' => null,
         ])->save();
 
         return redirect()->back();

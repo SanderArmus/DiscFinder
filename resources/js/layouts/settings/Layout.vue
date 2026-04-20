@@ -21,6 +21,10 @@ const sidebarNavItems: NavItem[] = [
         href: editPassword(),
     },
     {
+        title: 'Notifications',
+        href: '/settings/notifications',
+    },
+    {
         title: 'Two-Factor Auth',
         href: show(),
     },

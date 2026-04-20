@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('discs:expire')->daily();
+Schedule::command('discs:notify-expiring-soon')->daily();

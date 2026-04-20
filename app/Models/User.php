@@ -28,6 +28,9 @@ class User extends Authenticatable
         'password',
         'banned_at',
         'banned_reason',
+        'email_notify_disc_expiring',
+        'email_notify_disc_expired',
+        'email_notify_new_message',
     ];
 
     /**
@@ -54,6 +57,9 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'banned_at' => 'datetime',
+            'email_notify_disc_expiring' => 'boolean',
+            'email_notify_disc_expired' => 'boolean',
+            'email_notify_new_message' => 'boolean',
         ];
     }
 

@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Disc;
+use App\Models\User;
+use App\Notifications\DiscExpiredNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -30,6 +32,7 @@ class ExpireDiscsCommand extends Command
         $now = Carbon::now();
 
         $query = Disc::query()
+            ->with('user')
             ->where('active', true)
             ->whereNotNull('expires_at')
             ->where('expires_at', '<', $now);
@@ -42,9 +45,28 @@ class ExpireDiscsCommand extends Command
             return self::SUCCESS;
         }
 
-        $updated = $query->update(['active' => false]);
+        /** @var \Illuminate\Support\Collection<int, \App\Models\Disc> $expiredDiscs */
+        $expiredDiscs = (clone $query)->get();
 
-        $this->info("Expired {$updated} discs.");
+        $updated = Disc::query()
+            ->whereKey($expiredDiscs->pluck('id')->all())
+            ->update(['active' => false]);
+
+        $notified = 0;
+        foreach ($expiredDiscs as $disc) {
+            if (! $disc->user instanceof User) {
+                continue;
+            }
+
+            if (! $disc->user->email_notify_disc_expired) {
+                continue;
+            }
+
+            $disc->user->notify(new DiscExpiredNotification($disc));
+            $notified++;
+        }
+
+        $this->info("Expired {$updated} discs. Notified {$notified} users.");
 
         return self::SUCCESS;
     }

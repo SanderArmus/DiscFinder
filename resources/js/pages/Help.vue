@@ -120,6 +120,16 @@ function sendToAdmin(): void {
 
                     <section>
                         <h2 class="text-lg font-bold text-foreground">
+                            {{ t('Expiration') }}
+                        </h2>
+                        <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-foreground">
+                            <li>{{ t('Help expires 1') }}</li>
+                            <li>{{ t('Help expires 2') }}</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 class="text-lg font-bold text-foreground">
                             {{ t('Tips') }}
                         </h2>
                         <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-foreground">

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ChatBlock;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\NewMessageEmailNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class StoreSupportMessageController extends Controller
 {
@@ -58,12 +60,26 @@ class StoreSupportMessageController extends Controller
             }
         }
 
-        Message::create([
+        $message = Message::create([
             'sender_id' => $sender->id,
             'receiver_id' => $receiverId,
             'match_id' => null,
             'content' => $validated['content'],
         ]);
+
+        $receiver = User::query()->whereKey($receiverId)->first();
+        if ($receiver !== null && $receiver->email_notify_new_message) {
+            $cacheKey = "email_notify:new_message:support:receiver:{$receiver->id}:sender:{$sender->id}";
+            if (! Cache::has($cacheKey)) {
+                $senderName = $sender->username ?: ($sender->name ?: ($sender->email ?: "User #{$sender->id}"));
+                $receiver->notify(new NewMessageEmailNotification(
+                    $message,
+                    $senderName,
+                    $receiver->role === 'admin' ? '/admin/support-messages' : '/support/chat'
+                ));
+                Cache::put($cacheKey, true, now()->addMinutes(10));
+            }
+        }
 
         return redirect()->back();
     }
