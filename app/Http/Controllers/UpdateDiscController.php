@@ -25,11 +25,29 @@ class UpdateDiscController extends Controller
             ? Carbon::parse((string) $occurredAtInput)
             : null;
 
+        $inscriptionName = $request->input('inscriptionName') ?: null;
+        $inscriptionNumber = $request->input('inscriptionNumber') ?: null;
+        $legacyInscription = $request->input('inscription') ?: null;
+
+        $backText = null;
+        if ($inscriptionName !== null || $inscriptionNumber !== null) {
+            $backText = trim(implode(' ', array_filter([
+                $inscriptionName,
+                $inscriptionNumber,
+            ], fn ($v) => $v !== null && trim((string) $v) !== '')));
+            $backText = $backText !== '' ? $backText : null;
+        } else {
+            $backText = $legacyInscription;
+        }
+
         $disc->update([
             'manufacturer' => $request->input('manufacturer') ?: null,
             'model_name' => $request->input('name') ?: null,
             'plastic_type' => $request->input('plastic') ?: null,
-            'back_text' => $request->input('inscription') ?: null,
+            'back_text' => $backText,
+            'back_name' => $inscriptionName,
+            'back_number' => $inscriptionNumber,
+            'custom_description' => $request->input('customDescription') ?: null,
             'condition_estimate' => $request->input('condition') ?: null,
             'occurred_at' => $occurredAt,
         ]);

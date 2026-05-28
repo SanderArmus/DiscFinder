@@ -44,7 +44,7 @@ class StoreAdminMessageController extends Controller
                 $admin->notify(new NewMessageEmailNotification(
                     $message,
                     $senderName,
-                    '/admin/support-messages'
+                    '/messages'
                 ));
                 Cache::put($cacheKey, true, now()->addMinutes(10));
             }

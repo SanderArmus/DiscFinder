@@ -167,6 +167,18 @@ final class MatchScorer
             $scores[] = $this->stringSimilarity($nameLost, $nameFound);
         }
 
+        $inscriptionNameLost = $lost->back_name ?: null;
+        $inscriptionNameFound = $found->back_name ?: null;
+        if ($inscriptionNameLost !== null && $inscriptionNameFound !== null) {
+            $scores[] = $this->stringSimilarity($inscriptionNameLost, $inscriptionNameFound);
+        }
+
+        $inscriptionNumberLost = $lost->back_number ?: null;
+        $inscriptionNumberFound = $found->back_number ?: null;
+        if ($inscriptionNumberLost !== null && $inscriptionNumberFound !== null) {
+            $scores[] = $this->stringSimilarity($inscriptionNumberLost, $inscriptionNumberFound);
+        }
+
         $textLost = $lost->back_text ?: null;
         $textFound = $found->back_text ?: null;
         if ($textLost !== null && $textFound !== null) {

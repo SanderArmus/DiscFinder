@@ -46,6 +46,9 @@ class UpdateDiscRequest extends FormRequest
             'selectedColors.*' => ['string', 'max:50'],
             'condition' => ['nullable', 'string', 'in:new,good,worn'],
             'inscription' => ['nullable', 'string', 'max:500'],
+            'inscriptionName' => ['nullable', 'string', 'max:255'],
+            'inscriptionNumber' => ['nullable', 'string', 'max:255'],
+            'customDescription' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }

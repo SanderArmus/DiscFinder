@@ -25,10 +25,13 @@ class StoreLostDiscRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'plastic' => ['nullable', 'string', 'max:100'],
             'customDisc' => ['boolean'],
+            'customDescription' => ['nullable', 'string', 'max:2000'],
             'selectedColors' => ['array'],
             'selectedColors.*' => ['string', 'max:50'],
             'condition' => ['nullable', 'string', 'in:new,good,worn'],
             'inscription' => ['nullable', 'string', 'max:500'],
+            'inscriptionName' => ['nullable', 'string', 'max:255'],
+            'inscriptionNumber' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

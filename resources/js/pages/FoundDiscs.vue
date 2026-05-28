@@ -19,6 +19,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: t('Found Discs'), href: '/found-discs' },
 ];
 
+function currentLocalDatetimeInputValue(): string {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const COLOR_PRESETS = [
     { id: 'red', hex: '#dc2626', labelKey: 'Red' },
     { id: 'blue', hex: '#2563eb', labelKey: 'Blue' },
@@ -34,14 +41,16 @@ const COLOR_PRESETS = [
 
 const form = ref({
     location: '',
-    datetime: '',
+    datetime: currentLocalDatetimeInputValue(),
     manufacturer: '',
     name: '',
     plastic: '',
     customDisc: false,
+    customDescription: '',
     selectedColors: [] as string[],
     condition: '',
-    inscription: '',
+    inscriptionName: '',
+    inscriptionNumber: '',
 });
 
 const plasticSuggestions = ref<string[]>([]);
@@ -159,6 +168,15 @@ watch(
     },
 );
 
+watch(
+    () => form.value.customDisc,
+    (enabled) => {
+        if (!enabled) {
+            form.value.customDescription = '';
+        }
+    },
+);
+
 function togglePresetColor(hex: string): void {
     const arr = form.value.selectedColors;
     const i = arr.indexOf(hex);
@@ -190,6 +208,15 @@ const selectClass =
     'w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-foreground shadow-xs outline-none transition-colors focus:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 dark:bg-muted/30';
 
 const submitting = ref(false);
+
+function goBack(): void {
+    if (window.history.length > 1) {
+        window.history.back();
+        return;
+    }
+
+    router.visit(dashboard());
+}
 
 function submit(): void {
     submitting.value = true;
@@ -280,6 +307,17 @@ async function searchLocationOnMap(): Promise<void> {
         <div class="flex flex-1 flex-col">
             <main class="flex-1 px-6 py-12">
                 <div class="mx-auto max-w-3xl">
+                    <div class="mb-6">
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            @click="goBack"
+                        >
+                            <span aria-hidden="true">←</span>
+                            {{ t('Back') }}
+                        </button>
+                    </div>
+
                     <div class="mb-10 text-center">
                         <h2
                             class="mb-2 text-3xl font-extrabold tracking-tight text-foreground"
@@ -476,6 +514,23 @@ async function searchLocationOnMap(): Promise<void> {
                                     </label>
                                 </div>
 
+                                <div
+                                    v-if="form.customDisc"
+                                    class="space-y-2 md:col-span-2"
+                                >
+                                    <Label for="customDescription">{{ t('Custom description') }}</Label>
+                                    <textarea
+                                        id="customDescription"
+                                        v-model="form.customDescription"
+                                        rows="3"
+                                        :class="inputClass"
+                                        :placeholder="t('Custom description hint')"
+                                    />
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ t('Custom description note') }}
+                                    </p>
+                                </div>
+
                                 <div class="space-y-2">
                                     <Label for="condition">{{ t('Condition') }}</Label>
                                     <select
@@ -493,10 +548,20 @@ async function searchLocationOnMap(): Promise<void> {
                                 </div>
 
                                 <div class="space-y-2 md:col-span-2">
-                                    <Label for="inscription">{{ t('Name/Number written on disc') }}</Label>
+                                    <Label for="inscriptionName">{{ t('Name on disc') }}</Label>
                                     <input
-                                        id="inscription"
-                                        v-model="form.inscription"
+                                        id="inscriptionName"
+                                        v-model="form.inscriptionName"
+                                        type="text"
+                                        :class="inputClass"
+                                    />
+                                </div>
+
+                                <div class="space-y-2 md:col-span-2">
+                                    <Label for="inscriptionNumber">{{ t('Number on disc') }}</Label>
+                                    <input
+                                        id="inscriptionNumber"
+                                        v-model="form.inscriptionNumber"
                                         type="text"
                                         :class="inputClass"
                                     />

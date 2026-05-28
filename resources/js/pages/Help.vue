@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { useTranslations } from '@/composables/useTranslations';
-import { dashboard } from '@/routes';
+import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -11,7 +9,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { computed, ref } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
 
 const t = useTranslations();
 const page = usePage();

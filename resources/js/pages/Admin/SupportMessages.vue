@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 
 const t = useTranslations();
@@ -83,39 +76,6 @@ function clearFilters(): void {
 
 function userLabel(p: Person): string {
     return p.username || p.name || p.email || (p.id ? `#${p.id}` : t('Unknown'));
-}
-
-const isOpen = ref(false);
-const replyingTo = ref<SupportMessageRow | null>(null);
-const replyContent = ref('');
-const isSending = ref(false);
-
-function openReply(message: SupportMessageRow): void {
-    replyingTo.value = message;
-    replyContent.value = '';
-    isOpen.value = true;
-}
-
-function sendReply(): void {
-    if (!replyingTo.value) return;
-
-    isSending.value = true;
-    router.post(
-        `/admin/support-messages/${replyingTo.value.id}/reply`,
-        { content: replyContent.value } as any,
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                isOpen.value = false;
-                replyingTo.value = null;
-                replyContent.value = '';
-            },
-            onFinish: () => {
-                isSending.value = false;
-            },
-        },
-    );
 }
 </script>
 
@@ -250,9 +210,14 @@ function sendReply(): void {
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 text-right">
-                                    <Button variant="outline" class="h-9" @click="openReply(m)">
-                                        {{ t('Reply') }}
-                                    </Button>
+                                    <div class="flex justify-end gap-2">
+                                        <Link
+                                            :href="`/admin/support-chat/${m.sender.id}`"
+                                            class="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                                        >
+                                            {{ t('Open support chat') }}
+                                        </Link>
+                                    </div>
                                 </td>
                             </tr>
 
@@ -275,41 +240,6 @@ function sendReply(): void {
                         v-html="link.label"
                     />
                 </div>
-
-                <Dialog :open="isOpen" @update:open="isOpen = $event">
-                    <DialogContent class="sm:max-w-lg">
-                        <DialogHeader>
-                            <DialogTitle>{{ t('Reply') }}</DialogTitle>
-                            <DialogDescription>
-                                {{ t('Replying to') }}
-                                <span class="font-medium text-foreground">
-                                    {{ replyingTo ? userLabel(replyingTo.sender) : '' }}
-                                </span>
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div class="mt-3 space-y-2">
-                            <textarea
-                                v-model="replyContent"
-                                rows="5"
-                                class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 dark:bg-muted/30"
-                                :placeholder="t('Write your message')"
-                            />
-                        </div>
-
-                        <div class="mt-4 flex items-center justify-end gap-2">
-                            <Button variant="outline" @click="isOpen = false">
-                                {{ t('Cancel') }}
-                            </Button>
-                            <Button
-                                :disabled="isSending || replyContent.trim() === ''"
-                                @click="sendReply"
-                            >
-                                {{ isSending ? t('Sending...') : t('Send') }}
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
             </div>
         </div>
     </AppLayout>

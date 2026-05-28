@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import { useTranslations } from '@/composables/useTranslations';
-import AppLayout from '@/layouts/AppLayout.vue';
 import LocationMapPicker from '@/components/LocationMapPicker.vue';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 
@@ -37,6 +37,9 @@ const props = defineProps<{
         plasticType: string | null;
         condition: string | null;
         inscription: string | null;
+        inscriptionName?: string | null;
+        inscriptionNumber?: string | null;
+        customDescription?: string | null;
         occurredAt: string;
         active: boolean;
         expiresAt?: string | null;
@@ -123,7 +126,9 @@ const form = ref({
         .map(colorNameToHex)
         .filter((v): v is string => v !== null),
     condition: props.disc.condition ?? '',
-    inscription: props.disc.inscription ?? '',
+    inscriptionName: props.disc.inscriptionName ?? '',
+    inscriptionNumber: props.disc.inscriptionNumber ?? '',
+    customDescription: props.disc.customDescription ?? '',
 });
 
 const editing = ref(false);
@@ -141,7 +146,9 @@ function resetFormToDisc(): void {
             .map(colorNameToHex)
             .filter((v): v is string => v !== null),
         condition: props.disc.condition ?? '',
-        inscription: props.disc.inscription ?? '',
+        inscriptionName: props.disc.inscriptionName ?? '',
+        inscriptionNumber: props.disc.inscriptionNumber ?? '',
+        customDescription: props.disc.customDescription ?? '',
     };
 
     colorSectionOpen.value = false;
@@ -273,7 +280,7 @@ function submit(): void {
 function deleteDisc(): void {
     if (!props.canDelete) return;
 
-    // eslint-disable-next-line no-alert
+     
     const ok = window.confirm(t('Are you sure?'));
     if (!ok) return;
 
@@ -550,12 +557,33 @@ function renewDisc(): void {
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="inscription">{{ t('Name/Number written on disc') }}</Label>
+                            <Label for="inscriptionName">{{ t('Name on disc') }}</Label>
                             <input
-                                id="inscription"
-                                v-model="form.inscription"
+                                id="inscriptionName"
+                                v-model="form.inscriptionName"
                                 type="text"
                                 :class="inputClass"
+                            />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="inscriptionNumber">{{ t('Number on disc') }}</Label>
+                            <input
+                                id="inscriptionNumber"
+                                v-model="form.inscriptionNumber"
+                                type="text"
+                                :class="inputClass"
+                            />
+                        </div>
+
+                        <div class="space-y-2 md:col-span-2">
+                            <Label for="customDescription">{{ t('Custom description') }}</Label>
+                            <textarea
+                                id="customDescription"
+                                v-model="form.customDescription"
+                                rows="3"
+                                :class="inputClass"
+                                :placeholder="t('Custom description hint')"
                             />
                         </div>
 
@@ -581,7 +609,9 @@ function renewDisc(): void {
                         <p><span class="font-bold text-foreground">{{ t('Disc Name') }}:</span> {{ props.disc.modelName || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Plastic Type') }}:</span> {{ props.disc.plasticType || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Condition') }}:</span> {{ props.disc.condition || '—' }}</p>
-                        <p><span class="font-bold text-foreground">{{ t('Name/Number written on disc') }}:</span> {{ props.disc.inscription || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Name on disc') }}:</span> {{ props.disc.inscriptionName || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Number on disc') }}:</span> {{ props.disc.inscriptionNumber || '—' }}</p>
+                        <p v-if="props.disc.customDescription"><span class="font-bold text-foreground">{{ t('Custom description') }}:</span> {{ props.disc.customDescription }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Color') }}:</span> {{ colorListLabel(props.disc.colorNames) }}</p>
                     </div>
                 </div>

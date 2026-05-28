@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { MessageSquare } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { computed } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 
@@ -31,6 +31,13 @@ const props = defineProps<{
         lastMessageAt: string;
         blocked?: boolean;
     } | null;
+    supportThreads?: Array<{
+        userId: number;
+        otherUserName: string;
+        lastMessagePreview: string;
+        lastMessageAt: string;
+        blocked?: boolean;
+    }> | null;
 }>();
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
@@ -91,6 +98,38 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
                         <div class="flex shrink-0 flex-col items-end gap-2">
                             <p class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
                                 {{ props.supportThread.lastMessageAt }}
+                            </p>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link
+                    v-for="thread in props.supportThreads ?? []"
+                    :key="thread.userId"
+                    :href="`/admin/support-chat/${thread.userId}`"
+                    class="block rounded-xl border border-sidebar-border bg-card p-5 shadow-sm transition-colors hover:border-primary/50 dark:border-sidebar-border"
+                >
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h2 class="font-bold text-foreground">
+                                {{ t('Support') }}
+                            </h2>
+                            <p class="mt-1 text-xs text-muted-foreground">
+                                {{ thread.otherUserName }} • {{ t('Chat') }}
+                            </p>
+                            <p
+                                v-if="thread.blocked"
+                                class="mt-2 text-xs font-bold text-muted-foreground"
+                            >
+                                {{ t('Blocked') }}
+                            </p>
+                            <p class="mt-2 truncate text-sm text-foreground/80">
+                                {{ thread.lastMessagePreview }}
+                            </p>
+                        </div>
+                        <div class="flex shrink-0 flex-col items-end gap-2">
+                            <p class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
+                                {{ thread.lastMessageAt }}
                             </p>
                         </div>
                     </div>

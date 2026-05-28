@@ -2,7 +2,6 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,6 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 
 const t = useTranslations();
@@ -178,12 +178,6 @@ function listPreview(text: string | null): string {
                                     class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
                                 >
                                     {{ t('Users') }}
-                                </Link>
-                                <Link
-                                    href="/admin/support-messages"
-                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
-                                >
-                                    {{ t('Support messages') }}
                                 </Link>
                                 <Link
                                     href="/admin/chat-reports"

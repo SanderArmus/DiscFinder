@@ -75,7 +75,7 @@ class StoreSupportMessageController extends Controller
                 $receiver->notify(new NewMessageEmailNotification(
                     $message,
                     $senderName,
-                    $receiver->role === 'admin' ? '/admin/support-messages' : '/support/chat'
+                    $receiver->role === 'admin' ? '/messages' : '/support/chat'
                 ));
                 Cache::put($cacheKey, true, now()->addMinutes(10));
             }

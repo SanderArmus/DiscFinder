@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Flag, Send, SmilePlus, X } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { useTranslations } from '@/composables/useTranslations';
-import { dashboard } from '@/routes';
+import { Flag, X } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import {
     Dialog,
     DialogContent,
@@ -12,6 +9,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import ChatThreadBox from '@/components/ChatThreadBox.vue';
+import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
 
 const t = useTranslations();
 
@@ -34,101 +35,14 @@ const breadcrumbs = computed(() => [
     { title: t('Messages'), href: '/messages' },
 ]);
 
-const content = ref('');
 const sending = ref(false);
 const error = ref<string | null>(null);
 const reportOpen = ref(false);
 const reportReason = ref<'harassment' | 'spam' | 'scam' | 'other'>('harassment');
 const reportDetails = ref('');
 const reportAlsoBlock = ref(true);
-const messagesEl = ref<HTMLElement | null>(null);
-const textareaEl = ref<HTMLTextAreaElement | null>(null);
-const emojiOpen = ref(false);
-const emojiButtonEl = ref<HTMLElement | null>(null);
-const emojiPopoverEl = ref<HTMLElement | null>(null);
-
-const emojiChoices = [
-    '😀', '😄', '😉', '😍', '🥳', '😅', '😢', '😡',
-    '👍', '🙏', '👏', '🔥', '🎉', '❤️', '🤝', '✅',
-];
-
-function applyEmoticonsToMessage(value: string): string {
-    const replacements: Array<[RegExp, string]> = [
-        [/(^|[^:])(:-\)|:\))/g, '$1🙂'],
-        [/(^|[^:])(:-\(|:\()/g, '$1🙁'],
-        [/(^|[^:])(;-\)|;\))/g, '$1😉'],
-        [/(^|[^:])(:-D|:D)/gi, '$1😄'],
-        [/(^|[^:])(:-P|:P)/gi, '$1😛'],
-        [/&lt;3|<3/g, '❤️'],
-        [/:smile:/g, '😄'],
-        [/:heart:/g, '❤️'],
-        [/:thumbsup:/g, '👍'],
-    ];
-
-    const parts = value.split(/(\s+)/);
-    return parts
-        .map((part) => {
-            if (part.includes('://') || part.startsWith('www.') || part.startsWith('http')) {
-                return part;
-            }
-
-            let out = part;
-            for (const [re, repl] of replacements) {
-                out = out.replace(re, repl);
-            }
-            return out;
-        })
-        .join('');
-}
-
-function insertEmoji(emoji: string): void {
-    const el = textareaEl.value;
-    if (!el) {
-        content.value = `${content.value}${emoji}`;
-        emojiOpen.value = false;
-        return;
-    }
-
-    const start = el.selectionStart ?? content.value.length;
-    const end = el.selectionEnd ?? content.value.length;
-    const before = content.value.slice(0, start);
-    const after = content.value.slice(end);
-    content.value = `${before}${emoji}${after}`;
-
-    void nextTick(() => {
-        el.focus();
-        const pos = start + emoji.length;
-        el.setSelectionRange(pos, pos);
-    });
-
-    emojiOpen.value = false;
-}
-
-function handleGlobalPointerDown(e: MouseEvent): void {
-    if (!emojiOpen.value) return;
-    const target = e.target as Node | null;
-    const button = emojiButtonEl.value;
-    if (button && target && button.contains(target)) return;
-    const popover = emojiPopoverEl.value;
-    if (popover && target && popover.contains(target)) return;
-
-    emojiOpen.value = false;
-}
-
-function handleComposerKeydown(e: KeyboardEvent): void {
-    if (e.key !== 'Enter') return;
-    if (e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) return;
-    if ((e as KeyboardEvent & { isComposing?: boolean }).isComposing) return;
-
-    e.preventDefault();
-    sendMessage();
-}
-
-function sendMessage(): void {
+function sendMessage(value: string): void {
     if (props.chatBlocked) return;
-    const value = applyEmoticonsToMessage(content.value.trim());
-    if (!value) return;
-
     error.value = null;
     sending.value = true;
 
@@ -142,7 +56,6 @@ function sendMessage(): void {
             },
             onFinish: () => {
                 sending.value = false;
-                content.value = '';
             },
         },
     );
@@ -175,24 +88,6 @@ function submitReport(): void {
     );
 }
 
-function scrollToBottom(): void {
-    if (!messagesEl.value) return;
-    messagesEl.value.scrollTop = messagesEl.value.scrollHeight;
-}
-
-onMounted(() => {
-    document.addEventListener('pointerdown', handleGlobalPointerDown);
-    void nextTick(scrollToBottom);
-});
-
-onBeforeUnmount(() => {
-    document.removeEventListener('pointerdown', handleGlobalPointerDown);
-});
-
-watch(
-    () => props.messages.length,
-    () => void nextTick(scrollToBottom),
-);
 </script>
 
 <template>
@@ -253,100 +148,15 @@ watch(
                     </div>
                 </div>
 
-                <div
-                    ref="messagesEl"
-                    class="h-[55vh] overflow-y-auto p-4"
-                >
-                    <div class="space-y-2">
-                        <div
-                            v-for="m in props.messages"
-                            :key="m.id"
-                            class="flex"
-                            :class="m.senderId === authUserId ? 'justify-end' : 'justify-start'"
-                        >
-                            <div
-                                class="max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm"
-                                :class="
-                                    m.senderId === authUserId
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-foreground'
-                                "
-                            >
-                                <p class="whitespace-pre-wrap wrap-break-word">
-                                    {{ m.content }}
-                                </p>
-                                <p class="mt-1 text-right text-[10px] opacity-70">
-                                    {{ m.createdAt }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border-t border-border p-3">
-                    <div
-                        v-if="props.chatBlocked"
-                        class="mb-3 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground"
-                    >
-                        {{ t('Chat ended') }}
-                    </div>
-
-                    <div v-if="error" class="mb-2 text-sm text-destructive">
-                        {{ error }}
-                    </div>
-
-                    <div class="relative flex items-end gap-2">
-                        <button
-                            ref="emojiButtonEl"
-                            type="button"
-                            class="mb-1 inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
-                            @click="emojiOpen = !emojiOpen"
-                            :aria-label="t('Emoji')"
-                            title="Emoji"
-                        >
-                            <SmilePlus class="h-5 w-5" />
-                        </button>
-
-                        <div
-                            v-if="emojiOpen"
-                            ref="emojiPopoverEl"
-                            class="absolute bottom-12 left-0 z-50 w-56 rounded-xl border border-border bg-card p-2 shadow-lg max-h-60 overflow-y-auto"
-                        >
-                            <div class="grid grid-cols-8 gap-1">
-                                <button
-                                    v-for="e in emojiChoices"
-                                    :key="e"
-                                    type="button"
-                                    class="rounded-md p-1 text-lg hover:bg-muted"
-                                    @click="insertEmoji(e)"
-                                >
-                                    {{ e }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <textarea
-                            ref="textareaEl"
-                            v-model="content"
-                            rows="2"
-                            class="min-h-10 flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 dark:bg-muted/30"
-                            :placeholder="t('Write your message')"
-                            @keydown="handleComposerKeydown"
-                            :disabled="props.chatBlocked"
-                        />
-
-                        <button
-                            type="button"
-                            class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
-                            :disabled="props.chatBlocked || sending || content.trim() === ''"
-                            @click="sendMessage"
-                            :title="t('Send')"
-                            :aria-label="t('Send')"
-                        >
-                            <Send class="h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
+                <ChatThreadBox
+                    :messages="props.messages"
+                    :authUserId="props.authUserId"
+                    :sending="sending"
+                    :chatBlocked="props.chatBlocked"
+                    :placeholder="props.chatBlocked ? t('Chat ended') : t('Type your message...')"
+                    :error="error"
+                    @send="sendMessage"
+                />
             </div>
         </div>
     </AppLayout>

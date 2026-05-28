@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\AdminDiscsController;
 use App\Http\Controllers\Admin\AdminSupportMessagesController;
 use App\Http\Controllers\Admin\AdminUsersController;
+use App\Http\Controllers\Admin\ShowSupportChatController as AdminShowSupportChatController;
 use App\Http\Controllers\Auth\FacebookAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\NeutralPasswordResetLinkController;
 use App\Http\Controllers\ConfirmMatchController;
 use App\Http\Controllers\DeleteDiscController;
 use App\Http\Controllers\EndChatController;
@@ -41,6 +43,11 @@ Route::get('locale/{locale}', function (string $locale) {
 
     return redirect()->back();
 })->name('locale.switch');
+
+// Prevent user enumeration: always respond with a neutral status message.
+Route::post('forgot-password', NeutralPasswordResetLinkController::class)
+    ->middleware('guest')
+    ->name('password.email');
 
 Route::get('banned', function (Request $request) {
     $user = $request->user();
@@ -96,46 +103,93 @@ Route::get('messages', function () {
 
     $threads = app(MatchChatFinder::class)->findThreadsForUser($user, limit: 50);
 
-    // Support thread (messages with match_id = null)
+    // Support thread(s) (messages with match_id = null)
     $admin = \App\Models\User::query()->where('role', 'admin')->orderBy('id')->first();
     $supportThread = null;
+    $supportThreads = null;
     if ($admin !== null) {
-        $blocked = \App\Models\ChatBlock::query()
-            ->whereNull('match_id')
-            ->where(function ($q) use ($user, $admin) {
-                $q->where(function ($q2) use ($user, $admin) {
-                    $q2->where('blocker_id', $user->id)->where('blocked_id', $admin->id);
-                })->orWhere(function ($q2) use ($user, $admin) {
-                    $q2->where('blocker_id', $admin->id)->where('blocked_id', $user->id);
-                });
-            })
-            ->exists();
+        if ($user->role === 'admin') {
+            $recentSupportMessages = \App\Models\Message::query()
+                ->whereNull('match_id')
+                ->where(function ($q) use ($admin) {
+                    $q->where('sender_id', $admin->id)->orWhere('receiver_id', $admin->id);
+                })
+                ->with(['sender', 'receiver'])
+                ->latest('created_at')
+                ->limit(500)
+                ->get();
 
-        $lastSupportMessage = \App\Models\Message::query()
-            ->whereNull('match_id')
-            ->where(function ($q) use ($user, $admin) {
-                $q->where(function ($q2) use ($user, $admin) {
-                    $q2->where('sender_id', $user->id)->where('receiver_id', $admin->id);
-                })->orWhere(function ($q2) use ($user, $admin) {
-                    $q2->where('sender_id', $admin->id)->where('receiver_id', $user->id);
-                });
-            })
-            ->latest('created_at')
-            ->first();
+            $supportThreads = $recentSupportMessages
+                ->groupBy(function (\App\Models\Message $m) use ($admin) {
+                    return $m->sender_id === $admin->id ? $m->receiver_id : $m->sender_id;
+                })
+                ->map(function ($messages, $otherUserId) use ($admin) {
+                    /** @var \App\Models\Message $latest */
+                    $latest = $messages->first();
+                    $other = $latest->sender_id === $admin->id ? $latest->receiver : $latest->sender;
 
-        if ($lastSupportMessage !== null) {
-            $supportThread = [
-                'otherUserName' => $admin->username ?: ($admin->name ?: 'Admin'),
-                'lastMessagePreview' => \Illuminate\Support\Str::limit((string) $lastSupportMessage->content, 80, '...'),
-                'lastMessageAt' => $lastSupportMessage->created_at?->format('M j, H:i') ?? '',
-                'blocked' => $blocked,
-            ];
+                    $blocked = \App\Models\ChatBlock::query()
+                        ->whereNull('match_id')
+                        ->where(function ($q) use ($otherUserId, $admin) {
+                            $q->where(function ($q2) use ($otherUserId, $admin) {
+                                $q2->where('blocker_id', $otherUserId)->where('blocked_id', $admin->id);
+                            })->orWhere(function ($q2) use ($otherUserId, $admin) {
+                                $q2->where('blocker_id', $admin->id)->where('blocked_id', $otherUserId);
+                            });
+                        })
+                        ->exists();
+
+                    $otherUserName = $other?->username ?: ($other?->name ?: ($other?->email ?: "User #{$otherUserId}"));
+
+                    return [
+                        'userId' => (int) $otherUserId,
+                        'otherUserName' => $otherUserName,
+                        'lastMessagePreview' => \Illuminate\Support\Str::limit((string) ($latest->content ?? ''), 80, '...'),
+                        'lastMessageAt' => $latest->created_at?->format('M j, H:i') ?? '',
+                        'blocked' => $blocked,
+                    ];
+                })
+                ->values()
+                ->all();
+        } else {
+            $blocked = \App\Models\ChatBlock::query()
+                ->whereNull('match_id')
+                ->where(function ($q) use ($user, $admin) {
+                    $q->where(function ($q2) use ($user, $admin) {
+                        $q2->where('blocker_id', $user->id)->where('blocked_id', $admin->id);
+                    })->orWhere(function ($q2) use ($user, $admin) {
+                        $q2->where('blocker_id', $admin->id)->where('blocked_id', $user->id);
+                    });
+                })
+                ->exists();
+
+            $lastSupportMessage = \App\Models\Message::query()
+                ->whereNull('match_id')
+                ->where(function ($q) use ($user, $admin) {
+                    $q->where(function ($q2) use ($user, $admin) {
+                        $q2->where('sender_id', $user->id)->where('receiver_id', $admin->id);
+                    })->orWhere(function ($q2) use ($user, $admin) {
+                        $q2->where('sender_id', $admin->id)->where('receiver_id', $user->id);
+                    });
+                })
+                ->latest('created_at')
+                ->first();
+
+            if ($lastSupportMessage !== null) {
+                $supportThread = [
+                    'otherUserName' => $admin->username ?: ($admin->name ?: 'Admin'),
+                    'lastMessagePreview' => \Illuminate\Support\Str::limit((string) $lastSupportMessage->content, 80, '...'),
+                    'lastMessageAt' => $lastSupportMessage->created_at?->format('M j, H:i') ?? '',
+                    'blocked' => $blocked,
+                ];
+            }
         }
     }
 
     return Inertia::render('Messages', [
         'threads' => $threads,
         'supportThread' => $supportThread,
+        'supportThreads' => $supportThreads,
     ]);
 })->middleware(['auth', 'verified'])->name('messages.index');
 
@@ -179,6 +233,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
         ->name('admin.support-messages.index');
     Route::post('support-messages/{message}/reply', [AdminSupportMessagesController::class, 'reply'])
         ->name('admin.support-messages.reply');
+    Route::get('support-chat/{user}', AdminShowSupportChatController::class)
+        ->name('admin.support-chat.show');
 
     Route::get('chat-reports', [\App\Http\Controllers\Admin\ChatReportsController::class, 'index'])
         ->name('admin.chat-reports.index');

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import LocationMapPicker from '@/components/LocationMapPicker.vue';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 
@@ -27,6 +27,9 @@ type DiscCard = {
     plasticType: string | null;
     condition: string | null;
     inscription: string | null;
+    inscriptionName?: string | null;
+    inscriptionNumber?: string | null;
+    customDescription?: string | null;
     colors: string[];
     locationText: string;
     locationPin: { lat: number; lng: number } | null;
@@ -136,7 +139,9 @@ function statusBadgeClass(status: 'lost' | 'found'): string {
                         <p><span class="font-bold text-foreground">{{ t('Plastic Type') }}:</span> {{ props.lostDisc.plasticType || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Condition') }}:</span> {{ props.lostDisc.condition || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Color') }}:</span> {{ colorListLabel(props.lostDisc.colors) }}</p>
-                        <p><span class="font-bold text-foreground">{{ t('Name/Number written on disc') }}:</span> {{ props.lostDisc.inscription || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Name on disc') }}:</span> {{ props.lostDisc.inscriptionName || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Number on disc') }}:</span> {{ props.lostDisc.inscriptionNumber || '—' }}</p>
+                        <p v-if="props.lostDisc.customDescription"><span class="font-bold text-foreground">{{ t('Custom description') }}:</span> {{ props.lostDisc.customDescription }}</p>
                     </div>
                 </div>
 
@@ -184,7 +189,9 @@ function statusBadgeClass(status: 'lost' | 'found'): string {
                         <p><span class="font-bold text-foreground">{{ t('Plastic Type') }}:</span> {{ props.foundDisc.plasticType || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Condition') }}:</span> {{ props.foundDisc.condition || '—' }}</p>
                         <p><span class="font-bold text-foreground">{{ t('Color') }}:</span> {{ colorListLabel(props.foundDisc.colors) }}</p>
-                        <p><span class="font-bold text-foreground">{{ t('Name/Number written on disc') }}:</span> {{ props.foundDisc.inscription || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Name on disc') }}:</span> {{ props.foundDisc.inscriptionName || '—' }}</p>
+                        <p><span class="font-bold text-foreground">{{ t('Number on disc') }}:</span> {{ props.foundDisc.inscriptionNumber || '—' }}</p>
+                        <p v-if="props.foundDisc.customDescription"><span class="font-bold text-foreground">{{ t('Custom description') }}:</span> {{ props.foundDisc.customDescription }}</p>
                     </div>
                 </div>
             </div>

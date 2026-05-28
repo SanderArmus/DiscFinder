@@ -44,6 +44,8 @@ class AdminDiscsController
                         ->orWhere('model_name', 'like', $term)
                         ->orWhere('plastic_type', 'like', $term)
                         ->orWhere('back_text', 'like', $term)
+                        ->orWhere('back_name', 'like', $term)
+                        ->orWhere('back_number', 'like', $term)
                         ->orWhereHas('user', function ($uq) use ($term) {
                             $uq->where('name', 'like', $term)
                                 ->orWhere('username', 'like', $term)
@@ -74,6 +76,8 @@ class AdminDiscsController
                             ->orWhere('model_name', 'like', $term)
                             ->orWhere('plastic_type', 'like', $term)
                             ->orWhere('back_text', 'like', $term)
+                            ->orWhere('back_name', 'like', $term)
+                            ->orWhere('back_number', 'like', $term)
                             ->orWhereHas('user', function ($uq) use ($term) {
                                 $uq->where('name', 'like', $term)
                                     ->orWhere('username', 'like', $term)
@@ -84,6 +88,8 @@ class AdminDiscsController
                             ->orWhere('model_name', 'like', $term)
                             ->orWhere('plastic_type', 'like', $term)
                             ->orWhere('back_text', 'like', $term)
+                            ->orWhere('back_name', 'like', $term)
+                            ->orWhere('back_number', 'like', $term)
                             ->orWhereHas('user', function ($uq) use ($term) {
                                 $uq->where('name', 'like', $term)
                                     ->orWhere('username', 'like', $term)

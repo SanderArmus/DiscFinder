@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ArrowLeftRight, Flag, Send, SmilePlus, X } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { useTranslations } from '@/composables/useTranslations';
-import { dashboard } from '@/routes';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
     Dialog,
     DialogContent,
@@ -12,6 +9,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
 
 const t = useTranslations();
 

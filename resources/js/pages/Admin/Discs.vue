@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { useTranslations } from '@/composables/useTranslations';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 
 const t = useTranslations();
@@ -377,12 +377,6 @@ function urlWithTab(
                                     class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
                                 >
                                     {{ t('Users') }}
-                                </Link>
-                                <Link
-                                    href="/admin/support-messages"
-                                    class="flex-1 whitespace-nowrap px-4 py-2 text-center text-sm font-bold transition-colors bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground rounded-t-lg"
-                                >
-                                    {{ t('Support messages') }}
                                 </Link>
                                 <Link
                                     href="/admin/chat-reports"

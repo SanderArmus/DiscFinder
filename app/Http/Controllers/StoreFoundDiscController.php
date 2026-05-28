@@ -20,6 +20,21 @@ class StoreFoundDiscController extends Controller
             ? Carbon::parse($request->input('datetime'))
             : null;
 
+        $inscriptionName = $request->input('inscriptionName') ?: null;
+        $inscriptionNumber = $request->input('inscriptionNumber') ?: null;
+        $legacyInscription = $request->input('inscription') ?: null;
+
+        $backText = null;
+        if ($inscriptionName !== null || $inscriptionNumber !== null) {
+            $backText = trim(implode(' ', array_filter([
+                $inscriptionName,
+                $inscriptionNumber,
+            ], fn ($v) => $v !== null && trim((string) $v) !== '')));
+            $backText = $backText !== '' ? $backText : null;
+        } else {
+            $backText = $legacyInscription;
+        }
+
         $disc = Disc::create([
             'user_id' => $user->id,
             'status' => 'found',
@@ -27,7 +42,12 @@ class StoreFoundDiscController extends Controller
             'manufacturer' => $request->input('manufacturer') ?: null,
             'model_name' => $request->input('name') ?: null,
             'plastic_type' => $request->input('plastic') ?: null,
-            'back_text' => $request->input('inscription') ?: null,
+            'back_text' => $backText,
+            'back_name' => $inscriptionName,
+            'back_number' => $inscriptionNumber,
+            'custom_description' => $request->boolean('customDisc')
+                ? ($request->input('customDescription') ?: null)
+                : null,
             'condition_estimate' => $request->input('condition') ?: null,
             'active' => true,
             'expires_at' => now()->addDays(90),

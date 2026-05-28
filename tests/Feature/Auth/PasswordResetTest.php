@@ -29,6 +29,18 @@ test('reset password link can be requested', function () {
     Notification::assertSentTo($user, ResetPassword::class);
 });
 
+test('reset password link request does not reveal whether a user exists', function () {
+    Notification::fake();
+
+    $response = $this->post(route('password.email'), ['email' => 'missing-user@example.com']);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('status');
+
+    Notification::assertNothingSent();
+});
+
 test('reset password screen can be rendered', function () {
     Notification::fake();
 

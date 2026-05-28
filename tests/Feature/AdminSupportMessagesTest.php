@@ -25,23 +25,13 @@ test('admin can view support messages and reply', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.support-messages.index'))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/SupportMessages')
-            ->has('messages.data', 1)
-            ->where('messages.data.0.id', $incoming->id)
-        );
+        ->assertRedirect(route('messages.index'));
 
     $this->actingAs($admin)
-        ->post(route('admin.support-messages.reply', ['message' => $incoming->id]), [
-            'content' => 'Thanks, we are looking into it.',
-        ])
-        ->assertRedirect();
-
-    $this->assertDatabaseHas('messages', [
-        'sender_id' => $admin->id,
-        'receiver_id' => $user->id,
-        'match_id' => null,
-        'content' => 'Thanks, we are looking into it.',
-    ]);
+        ->get(route('admin.support-chat.show', ['user' => $user->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/SupportChat')
+            ->where('receiverId', $user->id)
+        );
 });

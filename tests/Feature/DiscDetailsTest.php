@@ -43,7 +43,9 @@ test('owner can view disc details, update it, and delete it', function () {
         'plastic' => 'Neutron',
         'selectedColors' => ['#dc2626'],
         'condition' => 'worn',
-        'inscription' => 'NEW123',
+        'inscriptionName' => 'JOHN',
+        'inscriptionNumber' => '555-0101',
+        'customDescription' => 'Has a stamp and a unique dye pattern.',
         'location' => 'New Location',
         'latitude' => 59.5,
         'longitude' => 24.7,
@@ -55,7 +57,10 @@ test('owner can view disc details, update it, and delete it', function () {
     $disc->refresh();
     expect($disc->model_name)->toBe('Glitch 2');
     expect($disc->condition_estimate)->toBe('worn');
-    expect($disc->back_text)->toBe('NEW123');
+    expect($disc->back_name)->toBe('JOHN');
+    expect($disc->back_number)->toBe('555-0101');
+    expect($disc->back_text)->toBe('JOHN 555-0101');
+    expect($disc->custom_description)->toBe('Has a stamp and a unique dye pattern.');
 
     $location = Location::where('disc_id', $disc->id)->firstOrFail();
     expect($location->location_text)->toBe('New Location');
@@ -99,7 +104,9 @@ test('disc update is forbidden for non-owners and inactive discs', function () {
         'plastic' => 'Neutron',
         'selectedColors' => ['#dc2626'],
         'condition' => 'worn',
-        'inscription' => 'NEW123',
+        'inscriptionName' => 'JOHN',
+        'inscriptionNumber' => '555-0101',
+        'customDescription' => 'Has a stamp and a unique dye pattern.',
         'location' => 'New Location',
         'latitude' => 59.5,
         'longitude' => 24.7,
