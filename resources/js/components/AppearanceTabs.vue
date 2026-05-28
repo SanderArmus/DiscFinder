@@ -20,14 +20,14 @@ const tabs = [
             :key="value"
             @click="updateAppearance(value)"
             :class="[
-                'flex flex-1 min-w-0 items-center justify-center rounded-md px-2 py-1.5 transition-colors sm:flex-none sm:px-3.5',
+                'flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md px-2 py-1.5 transition-colors sm:flex-none sm:flex-row sm:gap-1.5 sm:px-3.5',
                 appearance === value
                     ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
                     : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
             ]"
         >
-            <component :is="Icon" class="-ml-1 h-4 w-4" />
-            <span class="ml-1.5 hidden text-sm sm:inline">{{ label }}</span>
+            <component :is="Icon" class="h-4 w-4 sm:-ml-1" />
+            <span class="text-xs leading-none sm:ml-1.5 sm:text-sm">{{ label }}</span>
         </button>
     </div>
 </template>
