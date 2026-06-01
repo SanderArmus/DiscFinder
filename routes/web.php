@@ -34,12 +34,16 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
-Route::get('locale/{locale}', function (string $locale) {
+Route::get('locale/{locale}', function (Request $request, string $locale) {
     $supported = ['en', 'et'];
     if (! in_array($locale, $supported, true)) {
         abort(400);
     }
     session()->put('locale', $locale);
+
+    if ($user = $request->user()) {
+        $user->update(['locale' => $locale]);
+    }
 
     return redirect()->back();
 })->name('locale.switch');
