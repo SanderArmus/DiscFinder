@@ -110,6 +110,60 @@ test('finds matches from other users when time order, color, and condition match
     expect($matches[0]['foundDiscId'])->toBe($found->id);
 });
 
+test('finds matches for the finder when querying their found disc', function () {
+    $lostOwner = User::factory()->create();
+    $finderUser = User::factory()->create();
+
+    $color = Color::create(['name' => 'Blue']);
+
+    $lost = Disc::create([
+        'user_id' => $lostOwner->id,
+        'status' => 'lost',
+        'occurred_at' => Carbon::now()->subDay(),
+        'manufacturer' => 'Innova',
+        'model_name' => 'Glitch',
+        'plastic_type' => 'Neutron',
+        'back_text' => 'ABC',
+        'condition_estimate' => 'good',
+        'active' => true,
+    ]);
+    $lost->colors()->attach($color->id);
+    Location::create([
+        'disc_id' => $lost->id,
+        'latitude' => 59.437,
+        'longitude' => 24.7536,
+        'location_type' => 'lost',
+    ]);
+
+    $found = Disc::create([
+        'user_id' => $finderUser->id,
+        'status' => 'found',
+        'occurred_at' => Carbon::now(),
+        'manufacturer' => 'Innova',
+        'model_name' => 'Glitch',
+        'plastic_type' => 'Neutron',
+        'back_text' => 'ABC',
+        'condition_estimate' => 'good',
+        'active' => true,
+    ]);
+    $found->colors()->attach($color->id);
+    Location::create([
+        'disc_id' => $found->id,
+        'latitude' => 59.437,
+        'longitude' => 24.7536,
+        'location_type' => 'found',
+    ]);
+
+    $finder = new MatchFinder;
+    $matches = $finder->findForUser($finderUser, limit: 10, minScore: 60.0);
+
+    expect($matches)->toBeArray()->toHaveCount(1);
+    expect($matches[0]['lostDiscId'])->toBe($lost->id);
+    expect($matches[0]['foundDiscId'])->toBe($found->id);
+    expect($matches[0]['otherDiscId'])->toBe($lost->id);
+    expect($matches[0]['otherDiscType'])->toBe('lost');
+});
+
 test('discard pairs when found time is before lost time', function () {
     $lostOwner = User::factory()->create();
     $finderUser = User::factory()->create();

@@ -37,6 +37,8 @@ interface Match {
     date: string;
     lostDiscId: number;
     foundDiscId: number;
+    otherDiscId: number;
+    otherDiscType: 'lost' | 'found';
 }
 
 const props = defineProps<{
@@ -334,7 +336,11 @@ function statusLabel(disc: Disc): string {
                                             {{ match.name }}
                                         </h4>
                                         <p class="text-xs text-muted-foreground">
-                                            {{ t('Matches your lost disc report') }}
+                                            {{
+                                                match.otherDiscType === 'found'
+                                                    ? t('Matches your lost disc report')
+                                                    : t('Matches a disc you found')
+                                            }}
                                         </p>
                                     </div>
                                     <span
@@ -351,7 +357,11 @@ function statusLabel(disc: Disc): string {
                                 <div class="mb-4 grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <p class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
-                                            {{ t('Location Found') }}
+                                            {{
+                                                match.otherDiscType === 'found'
+                                                    ? t('Location Found')
+                                                    : t('Location Lost')
+                                            }}
                                         </p>
                                         <p class="text-foreground">
                                             {{ match.location }}
@@ -359,7 +369,11 @@ function statusLabel(disc: Disc): string {
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
-                                            {{ t('Date Found') }}
+                                            {{
+                                                match.otherDiscType === 'found'
+                                                    ? t('Date Found')
+                                                    : t('Date Lost')
+                                            }}
                                         </p>
                                         <p class="text-foreground">
                                             {{ match.date }}
@@ -375,7 +389,7 @@ function statusLabel(disc: Disc): string {
                                         {{ t('Leave a message') }}
                                     </Link>
                                     <Link
-                                        :href="`/discs/${match.foundDiscId}`"
+                                        :href="`/discs/${match.otherDiscId}`"
                                         class="rounded border border-input bg-muted/50 px-3 py-2 text-xs font-bold text-foreground transition-colors hover:bg-muted"
                                     >
                                         {{ t('View disc') }}

@@ -23,13 +23,17 @@ final class MatchFinder
      *     location: string,
      *     date: string,
      *     lostDiscId: int,
-     *     foundDiscId: int
+     *     foundDiscId: int,
+     *     otherDiscId: int,
+     *     otherDiscType: string
      * }>
      */
     public function findForUser(User $user, int $limit = 5, float $minScore = 60.0): array
     {
-        $lostDiscs = $user->discs()
-            ->where('status', 'lost')
+        // Consider both the user's lost and found discs so that matches are
+        // surfaced symmetrically to both the owner and the finder.
+        $discs = $user->discs()
+            ->whereIn('status', ['lost', 'found'])
             ->where('active', true)
             ->whereNotNull('occurred_at')
             ->whereNotNull('condition_estimate')
@@ -38,89 +42,13 @@ final class MatchFinder
             ->get();
 
         $matches = [];
-        foreach ($lostDiscs as $lostDisc) {
-            $lostLocation = $this->pickLocation($lostDisc);
-            if ($lostLocation === null) {
-                continue;
-            }
-
-            $lostColorIds = $lostDisc->colors->pluck('id')->all();
-            if (empty($lostColorIds)) {
-                continue;
-            }
-
-            // Candidate selection: hard filters first (fast), then scorer for final rules.
-            $foundCandidates = Disc::query()
-                ->where('status', 'found')
-                ->where('active', true)
-                ->where('user_id', '!=', $lostDisc->user_id) // never match same user's lost+found
-                ->whereNotNull('occurred_at')
-                ->whereNotNull('condition_estimate')
-                ->where('occurred_at', '>=', $lostDisc->occurred_at)
-                ->whereHas('colors', function ($q) use ($lostColorIds) {
-                    $q->whereIn('colors.id', $lostColorIds);
-                })
-                ->whereHas('locations', function ($q) {
-                    $q->whereNotNull('latitude')->whereNotNull('longitude');
-                })
-                ->with(['colors', 'locations'])
-                ->limit(30)
-                ->get();
-
-            foreach ($foundCandidates as $foundDisc) {
-                $scored = $this->scorer->score($lostDisc->loadMissing(['colors', 'locations']), $foundDisc);
-                if ($scored === null) {
-                    continue;
-                }
-
-                $score = $scored['match_score'];
-                if ($score < $minScore) {
-                    continue;
-                }
-
-                // Persist the match so we can open a chat thread for it.
-                $match = MatchThread::query()
-                    ->where('lost_disc_id', $lostDisc->id)
-                    ->where('found_disc_id', $foundDisc->id)
-                    ->first();
-
-                if ($match === null) {
-                    $match = MatchThread::create([
-                        'lost_disc_id' => $lostDisc->id,
-                        'found_disc_id' => $foundDisc->id,
-                        'match_score' => $score,
-                        'status' => 'pending',
-                    ]);
-                } else {
-                    if ($match->status === 'rejected') {
-                        continue;
-                    }
-
-                    $match->match_score = $score;
-                    if ($match->status === null) {
-                        $match->status = 'pending';
-                    }
-                    $match->save();
-                }
-
-                $foundLoc = $this->pickLocation($foundDisc);
-                $locationString = $foundLoc
-                    ? sprintf('%0.4f, %0.4f', (float) $foundLoc->latitude, (float) $foundLoc->longitude)
-                    : '—';
-
-                $matches[] = [
-                    'id' => $match->id,
-                    'name' => $foundDisc->model_name ?: ($foundDisc->manufacturer ?: '—'),
-                    'confidence' => (int) round($score),
-                    'location' => $locationString,
-                    'date' => $foundDisc->occurred_at instanceof Carbon
-                        ? $foundDisc->occurred_at->format('M j, Y')
-                        : (string) $foundDisc->occurred_at,
-                    'lostDiscId' => $lostDisc->id,
-                    'foundDiscId' => $foundDisc->id,
-                ];
+        foreach ($discs as $disc) {
+            foreach ($this->findForDisc($disc, $limit, $minScore) as $match) {
+                $matches[$match['id']] = $match;
             }
         }
+
+        $matches = array_values($matches);
 
         usort($matches, fn ($a, $b) => $b['confidence'] <=> $a['confidence']);
 
@@ -144,7 +72,9 @@ final class MatchFinder
      *     location: string,
      *     date: string,
      *     lostDiscId: int,
-     *     foundDiscId: int
+     *     foundDiscId: int,
+     *     otherDiscId: int,
+     *     otherDiscType: string
      * }>
      */
     public function findForDisc(Disc $disc, int $limit = 5, float $minScore = 60.0): array
@@ -245,6 +175,8 @@ final class MatchFinder
                         : (string) $foundDisc->occurred_at,
                     'lostDiscId' => $lostDisc->id,
                     'foundDiscId' => $foundDisc->id,
+                    'otherDiscId' => $foundDisc->id,
+                    'otherDiscType' => 'found',
                 ];
             }
         } else {
@@ -322,6 +254,8 @@ final class MatchFinder
                         : (string) $lostDisc->occurred_at,
                     'lostDiscId' => $lostDisc->id,
                     'foundDiscId' => $foundDisc->id,
+                    'otherDiscId' => $lostDisc->id,
+                    'otherDiscType' => 'lost',
                 ];
             }
         }
